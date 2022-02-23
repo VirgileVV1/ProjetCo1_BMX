@@ -1,0 +1,1798 @@
+
+<!DOCTYPE html>
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>website package &#8212; Documentation UFOLEP 1.0.0</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/translations.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Recherche" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="Index général"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Index des modules Python"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Documentation UFOLEP 1.0.0</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">website package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="website-package">
+<h1>website package<a class="headerlink" href="#website-package" title="Lien permanent vers ce titre">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Lien permanent vers ce titre">¶</a></h2>
+</section>
+<section id="module-website.auth">
+<span id="website-auth-module"></span><h2>website.auth module<a class="headerlink" href="#module-website.auth" title="Lien permanent vers ce titre">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="website.auth.login">
+<span class="sig-prename descclassname"><span class="pre">website.auth.</span></span><span class="sig-name descname"><span class="pre">login</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.auth.login" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /login »</p>
+<p>Fonction affichant la page de connection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>template login.html</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.auth.login_post">
+<span class="sig-prename descclassname"><span class="pre">website.auth.</span></span><span class="sig-name descname"><span class="pre">login_post</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.auth.login_post" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /login » en methode POST</p>
+<p>Fonction gérant la connection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>redirection vers views.home ou auth.login</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.auth.logout">
+<span class="sig-prename descclassname"><span class="pre">website.auth.</span></span><span class="sig-name descname"><span class="pre">logout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.auth.logout" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /logout »</p>
+<p>Fonction déconnectant l’utilisateur</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>redirection vers views.home</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-website.models">
+<span id="website-models-module"></span><h2>website.models module<a class="headerlink" href="#module-website.models" title="Lien permanent vers ce titre">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Categorie">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Categorie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Categorie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des catégories dans la base de données</p>
+<p>Classe représentant les catégories dans la base de données, la table associée est « categorie »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Categorie.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.etape_id">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#website.models.Categorie.etape_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.categorie_type_id">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#website.models.Categorie.categorie_type_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du type de catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.pool_finie">
+<span class="sig-name descname"><span class="pre">pool_finie</span></span><a class="headerlink" href="#website.models.Categorie.pool_finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les pool sont-elles finies ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.quart_finie">
+<span class="sig-name descname"><span class="pre">quart_finie</span></span><a class="headerlink" href="#website.models.Categorie.quart_finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les quart sont-ils finis ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.demi_finie">
+<span class="sig-name descname"><span class="pre">demi_finie</span></span><a class="headerlink" href="#website.models.Categorie.demi_finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les demi sont-ils finies ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.finale_finie">
+<span class="sig-name descname"><span class="pre">finale_finie</span></span><a class="headerlink" href="#website.models.Categorie.finale_finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les finale sont-elles finies ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.quart_genere">
+<span class="sig-name descname"><span class="pre">quart_genere</span></span><a class="headerlink" href="#website.models.Categorie.quart_genere" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les quart sont-ils générés ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.demi_genere">
+<span class="sig-name descname"><span class="pre">demi_genere</span></span><a class="headerlink" href="#website.models.Categorie.demi_genere" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les demi sont-elles générées ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.finale_genere">
+<span class="sig-name descname"><span class="pre">finale_genere</span></span><a class="headerlink" href="#website.models.Categorie.finale_genere" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, les finale sont-elles générées ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.finie">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#website.models.Categorie.finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, la catégorie est-elle terminée ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.races">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#website.models.Categorie.races" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des races de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie.participations">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#website.models.Categorie.participations" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des participations à la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#id0" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">demi_finie</span></span><a class="headerlink" href="#id1" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">demi_genere</span></span><a class="headerlink" href="#id2" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#id3" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">finale_finie</span></span><a class="headerlink" href="#id4" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">finale_genere</span></span><a class="headerlink" href="#id5" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#id6" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id7" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#id8" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">pool_finie</span></span><a class="headerlink" href="#id9" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">quart_finie</span></span><a class="headerlink" href="#id10" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">quart_genere</span></span><a class="headerlink" href="#id11" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#id12" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Categorie_type">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Categorie_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Categorie_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des types de catégories dans la base de données</p>
+<p>Classe représentant les types de catégories dans la base de données, la table associée est « categorie_type »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Categorie_type.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du type de categorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.min_age">
+<span class="sig-name descname"><span class="pre">min_age</span></span><a class="headerlink" href="#website.models.Categorie_type.min_age" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, age minimum de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.max_age">
+<span class="sig-name descname"><span class="pre">max_age</span></span><a class="headerlink" href="#website.models.Categorie_type.max_age" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, age maximum de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#website.models.Categorie_type.name" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, nom du type de catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.races">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#website.models.Categorie_type.races" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des races du type de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Categorie_type.categories">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="headerlink" href="#website.models.Categorie_type.categories" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des catégories de ce type</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="headerlink" href="#id13" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id14" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">max_age</span></span><a class="headerlink" href="#id15" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">min_age</span></span><a class="headerlink" href="#id16" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#id17" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#id18" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Championnat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Championnat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Championnat" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des championnats dans la base de données</p>
+<p>Classe représentant les championnats dans la base de données, la table associée est « championnat »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Championnat.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la categorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat.championnat_type_id">
+<span class="sig-name descname"><span class="pre">championnat_type_id</span></span><a class="headerlink" href="#website.models.Championnat.championnat_type_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du type de championnat</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat.annee">
+<span class="sig-name descname"><span class="pre">annee</span></span><a class="headerlink" href="#website.models.Championnat.annee" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, année du championnat</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat.etapes">
+<span class="sig-name descname"><span class="pre">etapes</span></span><a class="headerlink" href="#website.models.Championnat.etapes" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des étapes de ce championnat</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">annee</span></span><a class="headerlink" href="#id19" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat.championnat_type">
+<span class="sig-name descname"><span class="pre">championnat_type</span></span><a class="headerlink" href="#website.models.Championnat.championnat_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">championnat_type_id</span></span><a class="headerlink" href="#id20" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">etapes</span></span><a class="headerlink" href="#id21" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id22" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Championnat_type">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Championnat_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Championnat_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des types de championnats dans la base de données</p>
+<p>Classe représentant les types de championnats dans la base de données, la table associée est « championnat_type »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat_type.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Championnat_type.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du type de categorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat_type.type">
+<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#website.models.Championnat_type.type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, dénomination du type de championnat (ie: Régionnal)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat_type.nb_etapes_max">
+<span class="sig-name descname"><span class="pre">nb_etapes_max</span></span><a class="headerlink" href="#website.models.Championnat_type.nb_etapes_max" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, nombre d’étapes maximum du type de championnat</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Championnat_type.championnats">
+<span class="sig-name descname"><span class="pre">championnats</span></span><a class="headerlink" href="#website.models.Championnat_type.championnats" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des championnats de ce type</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">championnats</span></span><a class="headerlink" href="#id23" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id24" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">nb_etapes_max</span></span><a class="headerlink" href="#id25" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#id26" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Club">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Club</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Club" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des clubs dans la base de données</p>
+<p>Classe représentant les clubs dans la base de données, la table associée est « club »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Club.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du club</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.ville">
+<span class="sig-name descname"><span class="pre">ville</span></span><a class="headerlink" href="#website.models.Club.ville" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, ville du club</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.initiales">
+<span class="sig-name descname"><span class="pre">initiales</span></span><a class="headerlink" href="#website.models.Club.initiales" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 5, initiale(s) du club</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.titulaire">
+<span class="sig-name descname"><span class="pre">titulaire</span></span><a class="headerlink" href="#website.models.Club.titulaire" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des titulaires du club</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.etapes">
+<span class="sig-name descname"><span class="pre">etapes</span></span><a class="headerlink" href="#website.models.Club.etapes" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des étapes ayant lieux dans la ville du club</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">etapes</span></span><a class="headerlink" href="#id27" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id28" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id29">
+<span class="sig-name descname"><span class="pre">initiales</span></span><a class="headerlink" href="#id29" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Club.titulaires">
+<span class="sig-name descname"><span class="pre">titulaires</span></span><a class="headerlink" href="#website.models.Club.titulaires" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id30">
+<span class="sig-name descname"><span class="pre">ville</span></span><a class="headerlink" href="#id30" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Couloir">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Couloir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Couloir" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des couloirs dans la base de données</p>
+<p>Classe représentant les successions de couloirs pour leur attribution dans la base de données, la table associée est « couloir »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Couloir.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du couloir</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.couloir_1">
+<span class="sig-name descname"><span class="pre">couloir_1</span></span><a class="headerlink" href="#website.models.Couloir.couloir_1" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, couloir pour la première course</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.couloir_2">
+<span class="sig-name descname"><span class="pre">couloir_2</span></span><a class="headerlink" href="#website.models.Couloir.couloir_2" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, couloir pour la deuxième course</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.couloir_3">
+<span class="sig-name descname"><span class="pre">couloir_3</span></span><a class="headerlink" href="#website.models.Couloir.couloir_3" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, couloir pour la troisième course</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.couloir_4">
+<span class="sig-name descname"><span class="pre">couloir_4</span></span><a class="headerlink" href="#website.models.Couloir.couloir_4" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, couloir pour la quatrième course</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.couloir_5">
+<span class="sig-name descname"><span class="pre">couloir_5</span></span><a class="headerlink" href="#website.models.Couloir.couloir_5" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, couloir pour la cinquième course</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Couloir.participants_race">
+<span class="sig-name descname"><span class="pre">participants_race</span></span><a class="headerlink" href="#website.models.Couloir.participants_race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des participations aux races avec cette enchainement de couloirs</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id31">
+<span class="sig-name descname"><span class="pre">couloir_1</span></span><a class="headerlink" href="#id31" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id32">
+<span class="sig-name descname"><span class="pre">couloir_2</span></span><a class="headerlink" href="#id32" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id33">
+<span class="sig-name descname"><span class="pre">couloir_3</span></span><a class="headerlink" href="#id33" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id34">
+<span class="sig-name descname"><span class="pre">couloir_4</span></span><a class="headerlink" href="#id34" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id35">
+<span class="sig-name descname"><span class="pre">couloir_5</span></span><a class="headerlink" href="#id35" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id36">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id36" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id37">
+<span class="sig-name descname"><span class="pre">participants_race</span></span><a class="headerlink" href="#id37" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Etape">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Etape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des étapes dans la base de données</p>
+<p>Classe représentant les étapes dans la base de données, la table associée est « etape »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Etape.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.championna_id">
+<span class="sig-name descname"><span class="pre">championna_id</span></span><a class="headerlink" href="#website.models.Etape.championna_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du championnat</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.lieu_id">
+<span class="sig-name descname"><span class="pre">lieu_id</span></span><a class="headerlink" href="#website.models.Etape.lieu_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du club organisant l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.finie">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#website.models.Etape.finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, l’étape est-elle terminée ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.participations">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#website.models.Etape.participations" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des participations à l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.races">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#website.models.Etape.races" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des races de l’étapes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.categories">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="headerlink" href="#website.models.Etape.categories" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des catégories de l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id38">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="headerlink" href="#id38" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.championnat">
+<span class="sig-name descname"><span class="pre">championnat</span></span><a class="headerlink" href="#website.models.Etape.championnat" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.championnat_id">
+<span class="sig-name descname"><span class="pre">championnat_id</span></span><a class="headerlink" href="#website.models.Etape.championnat_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Etape.club">
+<span class="sig-name descname"><span class="pre">club</span></span><a class="headerlink" href="#website.models.Etape.club" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id39">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#id39" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id40">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id40" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id41">
+<span class="sig-name descname"><span class="pre">lieu_id</span></span><a class="headerlink" href="#id41" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id42">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#id42" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id43">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#id43" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Manche">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Manche</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Manche" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des manches dans la base de données</p>
+<p>Classe représentant les manches dans la base de données, la table associée est « manche »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Manche.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Manche.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Manche.race_id">
+<span class="sig-name descname"><span class="pre">race_id</span></span><a class="headerlink" href="#website.models.Manche.race_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de la race de la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Manche.finie">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#website.models.Manche.finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, la manche est-elle terminée ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Manche.participations">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#website.models.Manche.participations" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des participations à la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id44">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#id44" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id45">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id45" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id46">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#id46" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Manche.race">
+<span class="sig-name descname"><span class="pre">race</span></span><a class="headerlink" href="#website.models.Manche.race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id47">
+<span class="sig-name descname"><span class="pre">race_id</span></span><a class="headerlink" href="#id47" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Participant_categorie">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Participant_categorie</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Participant_categorie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des participations à la catégorie dans la base de données</p>
+<p>Classe représentant les participations à la catégorie dans la base de données, la table associée est « participant_categorie »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_categorie.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Participant_categorie.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la participation à la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_categorie.titulaire_id">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#website.models.Participant_categorie.titulaire_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_categorie.categorie_id">
+<span class="sig-name descname"><span class="pre">categorie_id</span></span><a class="headerlink" href="#website.models.Participant_categorie.categorie_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de la catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_categorie.categorie">
+<span class="sig-name descname"><span class="pre">categorie</span></span><a class="headerlink" href="#website.models.Participant_categorie.categorie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id48">
+<span class="sig-name descname"><span class="pre">categorie_id</span></span><a class="headerlink" href="#id48" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id49">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id49" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id50">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#id50" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Participant_etape">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Participant_etape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Participant_etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des participations à une étaps dans la base de données</p>
+<p>Classe représentant les participations à une étaps dans la base de données, la table associée est « participant_etape »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_etape.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Participant_etape.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la participation à l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_etape.titulaire_id">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#website.models.Participant_etape.titulaire_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_etape.etape_id">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#website.models.Participant_etape.etape_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de l’étape</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_etape.categorie_type_id">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#website.models.Participant_etape.categorie_type_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du type de catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id51">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#id51" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_etape.etape">
+<span class="sig-name descname"><span class="pre">etape</span></span><a class="headerlink" href="#website.models.Participant_etape.etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id52">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#id52" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id53">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id53" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id54">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#id54" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Participant_manche">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Participant_manche</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Participant_manche" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des participations à la manche dans la base de données</p>
+<p>Classe représentant les participations à la manche dans la base de données, la table associée est « participant_manche »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Participant_manche.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la participation à la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.titulaire_id">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#website.models.Participant_manche.titulaire_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.manche_id">
+<span class="sig-name descname"><span class="pre">manche_id</span></span><a class="headerlink" href="#website.models.Participant_manche.manche_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.place_depart">
+<span class="sig-name descname"><span class="pre">place_depart</span></span><a class="headerlink" href="#website.models.Participant_manche.place_depart" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, numéro de couloir de départ pour la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.resultat">
+<span class="sig-name descname"><span class="pre">resultat</span></span><a class="headerlink" href="#website.models.Participant_manche.resultat" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, nombre de points sur la manche</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id55">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id55" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.manche">
+<span class="sig-name descname"><span class="pre">manche</span></span><a class="headerlink" href="#website.models.Participant_manche.manche" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id56">
+<span class="sig-name descname"><span class="pre">manche_id</span></span><a class="headerlink" href="#id56" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id57">
+<span class="sig-name descname"><span class="pre">place_depart</span></span><a class="headerlink" href="#id57" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id58">
+<span class="sig-name descname"><span class="pre">resultat</span></span><a class="headerlink" href="#id58" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_manche.titulaire">
+<span class="sig-name descname"><span class="pre">titulaire</span></span><a class="headerlink" href="#website.models.Participant_manche.titulaire" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id59">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#id59" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Participant_race">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Participant_race</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Participant_race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des participations à la race dans la base de données</p>
+<p>Classe représentant les participations à la race dans la base de données, la table associée est « participant_race »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Participant_race.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la participation à la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.titulaire_id">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#website.models.Participant_race.titulaire_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.race_id">
+<span class="sig-name descname"><span class="pre">race_id</span></span><a class="headerlink" href="#website.models.Participant_race.race_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.couloir_id">
+<span class="sig-name descname"><span class="pre">couloir_id</span></span><a class="headerlink" href="#website.models.Participant_race.couloir_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du couloir attribué</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.resultat">
+<span class="sig-name descname"><span class="pre">resultat</span></span><a class="headerlink" href="#website.models.Participant_race.resultat" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, nombre de points sur la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.couloir">
+<span class="sig-name descname"><span class="pre">couloir</span></span><a class="headerlink" href="#website.models.Participant_race.couloir" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id60">
+<span class="sig-name descname"><span class="pre">couloir_id</span></span><a class="headerlink" href="#id60" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id61">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id61" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Participant_race.race">
+<span class="sig-name descname"><span class="pre">race</span></span><a class="headerlink" href="#website.models.Participant_race.race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id62">
+<span class="sig-name descname"><span class="pre">race_id</span></span><a class="headerlink" href="#id62" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id63">
+<span class="sig-name descname"><span class="pre">resultat</span></span><a class="headerlink" href="#id63" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id64">
+<span class="sig-name descname"><span class="pre">titulaire_id</span></span><a class="headerlink" href="#id64" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Race">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Race</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des races dans la base de données</p>
+<p>Classe représentant les races dans la base de données, la table associée est « race »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Race.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#website.models.Race.name" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 1, nom de la race (ie: A)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.etape_id">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#website.models.Race.etape_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de l’étape de la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.categorie_type_id">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#website.models.Race.categorie_type_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du type de catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.race_type_id">
+<span class="sig-name descname"><span class="pre">race_type_id</span></span><a class="headerlink" href="#website.models.Race.race_type_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du type de race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.categorie_id">
+<span class="sig-name descname"><span class="pre">categorie_id</span></span><a class="headerlink" href="#website.models.Race.categorie_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id de la catégorie de la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.finie">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#website.models.Race.finie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bool, la race est-elle terminée ?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.participations">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#website.models.Race.participations" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des participations à la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.manches">
+<span class="sig-name descname"><span class="pre">manches</span></span><a class="headerlink" href="#website.models.Race.manches" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des manches de la race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.categorie">
+<span class="sig-name descname"><span class="pre">categorie</span></span><a class="headerlink" href="#website.models.Race.categorie" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id65">
+<span class="sig-name descname"><span class="pre">categorie_id</span></span><a class="headerlink" href="#id65" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.categorie_type">
+<span class="sig-name descname"><span class="pre">categorie_type</span></span><a class="headerlink" href="#website.models.Race.categorie_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id66">
+<span class="sig-name descname"><span class="pre">categorie_type_id</span></span><a class="headerlink" href="#id66" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.etape">
+<span class="sig-name descname"><span class="pre">etape</span></span><a class="headerlink" href="#website.models.Race.etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id67">
+<span class="sig-name descname"><span class="pre">etape_id</span></span><a class="headerlink" href="#id67" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id68">
+<span class="sig-name descname"><span class="pre">finie</span></span><a class="headerlink" href="#id68" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id69">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id69" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id70">
+<span class="sig-name descname"><span class="pre">manches</span></span><a class="headerlink" href="#id70" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id71">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#id71" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id72">
+<span class="sig-name descname"><span class="pre">participations</span></span><a class="headerlink" href="#id72" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race.race_type">
+<span class="sig-name descname"><span class="pre">race_type</span></span><a class="headerlink" href="#website.models.Race.race_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id73">
+<span class="sig-name descname"><span class="pre">race_type_id</span></span><a class="headerlink" href="#id73" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Race_type">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Race_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Race_type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des types de races dans la base de données</p>
+<p>Classe représentant les types de races dans la base de données, la table associée est « race_type »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race_type.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Race_type.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du type de race</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race_type.type">
+<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#website.models.Race_type.type" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 50, dénomination du type de race (ie: Pool)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Race_type.races">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#website.models.Race_type.races" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des races de cette catégorie</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id74">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id74" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id75">
+<span class="sig-name descname"><span class="pre">races</span></span><a class="headerlink" href="#id75" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id76">
+<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#id76" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Sexe">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Sexe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Sexe" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des sexes dans la base de données</p>
+<p>Classe représentant les sexes dans la base de données, la table associée est « sexe »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Sexe.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Sexe.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du sexe</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Sexe.denomination">
+<span class="sig-name descname"><span class="pre">denomination</span></span><a class="headerlink" href="#website.models.Sexe.denomination" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 20, denomination du sexe (ie: Homme)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Sexe.titulaires">
+<span class="sig-name descname"><span class="pre">titulaires</span></span><a class="headerlink" href="#website.models.Sexe.titulaires" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste de tous les titulaires ayant le sexe</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id77">
+<span class="sig-name descname"><span class="pre">denomination</span></span><a class="headerlink" href="#id77" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id78">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id78" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id79">
+<span class="sig-name descname"><span class="pre">titulaires</span></span><a class="headerlink" href="#id79" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.Titulaire">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">Titulaire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.Titulaire" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des titulaires dans la base de données</p>
+<p>Classe représentant les titulaires dans la base de données, la table associée est « titulaire »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.Titulaire.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.nom">
+<span class="sig-name descname"><span class="pre">nom</span></span><a class="headerlink" href="#website.models.Titulaire.nom" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, nom du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.prenom">
+<span class="sig-name descname"><span class="pre">prenom</span></span><a class="headerlink" href="#website.models.Titulaire.prenom" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, prénom du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.date_naissance">
+<span class="sig-name descname"><span class="pre">date_naissance</span></span><a class="headerlink" href="#website.models.Titulaire.date_naissance" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Date, date de naissance du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.numero_plaque">
+<span class="sig-name descname"><span class="pre">numero_plaque</span></span><a class="headerlink" href="#website.models.Titulaire.numero_plaque" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 2, numéro de plaque du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.club_id">
+<span class="sig-name descname"><span class="pre">club_id</span></span><a class="headerlink" href="#website.models.Titulaire.club_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du club du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.sexe_id">
+<span class="sig-name descname"><span class="pre">sexe_id</span></span><a class="headerlink" href="#website.models.Titulaire.sexe_id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Entier, id du sexe du titulaire</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.manches">
+<span class="sig-name descname"><span class="pre">manches</span></span><a class="headerlink" href="#website.models.Titulaire.manches" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Liste des manches auxquelles le titulaire à participé</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.club">
+<span class="sig-name descname"><span class="pre">club</span></span><a class="headerlink" href="#website.models.Titulaire.club" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id80">
+<span class="sig-name descname"><span class="pre">club_id</span></span><a class="headerlink" href="#id80" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id81">
+<span class="sig-name descname"><span class="pre">date_naissance</span></span><a class="headerlink" href="#id81" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id82">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id82" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id83">
+<span class="sig-name descname"><span class="pre">manches</span></span><a class="headerlink" href="#id83" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id84">
+<span class="sig-name descname"><span class="pre">nom</span></span><a class="headerlink" href="#id84" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id85">
+<span class="sig-name descname"><span class="pre">numero_plaque</span></span><a class="headerlink" href="#id85" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id86">
+<span class="sig-name descname"><span class="pre">prenom</span></span><a class="headerlink" href="#id86" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.Titulaire.sexe">
+<span class="sig-name descname"><span class="pre">sexe</span></span><a class="headerlink" href="#website.models.Titulaire.sexe" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id87">
+<span class="sig-name descname"><span class="pre">sexe_id</span></span><a class="headerlink" href="#id87" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="website.models.User">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">website.models.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.models.User" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Bases : <code class="xref py py-class docutils literal notranslate"><span class="pre">flask_login.mixins.UserMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.orm.decl_api.Model</span></code></p>
+<p>Représentation des utilisateurs dans la base de données</p>
+<p>Classe représentant les utilisateurs dans la base de données, la table associée est « user »</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.User.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#website.models.User.id" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Clef primaire, id de l’utilisateur</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.User.username">
+<span class="sig-name descname"><span class="pre">username</span></span><a class="headerlink" href="#website.models.User.username" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, nom d’utilisateur</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="website.models.User.password">
+<span class="sig-name descname"><span class="pre">password</span></span><a class="headerlink" href="#website.models.User.password" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Chaine de caractère de taille 100, hash du mot de passe</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id88">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#id88" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id89">
+<span class="sig-name descname"><span class="pre">password</span></span><a class="headerlink" href="#id89" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id90">
+<span class="sig-name descname"><span class="pre">username</span></span><a class="headerlink" href="#id90" title="Lien permanent vers cette définition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-website.views">
+<span id="website-views-module"></span><h2>website.views module<a class="headerlink" href="#module-website.views" title="Lien permanent vers ce titre">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.add_championnat">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">add_championnat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.add_championnat" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnats/ en method POST »</p>
+<p>Fonction ajoutant un championnat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>redirection vers views.championnats</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.add_club">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">add_club</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.add_club" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /clubs/ en method POST »</p>
+<p>Fonction ajoutant un club.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>redirection vers views.club</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.add_etape">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">add_etape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.add_etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etapes/ en method POST »</p>
+<p>Fonction ajoutant une étape à un championnat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>redirection vers views.etapes</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.add_titulaire">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">add_titulaire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.add_titulaire" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /titulaires/ en method POST »</p>
+<p>Fonction ajoutant un titulaire</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>redirection vers views.titulaire</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.calcul_points_race">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">calcul_points_race</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">races</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.calcul_points_race" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de calcul des points d’un race</p>
+<p>Fonction qui calcul les points en fonction de l’orde d’arrivé des pilotes à une manche</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>dictionnaire ordonné par ordre croissant des points reçus aux races d’une manche</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.championnats">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">championnats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.championnats" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnats/ »</p>
+<p>Fonction affichant la liste des championnats</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>template championnats.html</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.check_titulaire_number">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">check_titulaire_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">titulaires</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.check_titulaire_number" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de vérification de l’unicité de la plaque</p>
+<p>Fonction vérifiant si le numéro de plaque voulu n’existe pas déjà dans le club</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>vrai ou faux</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.clubs">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">clubs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.clubs" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /clubs/ »</p>
+<p>Fonction affichant la liste des clubs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>template clubs.html</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.delete_titulaire">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">delete_titulaire</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.delete_titulaire" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /titulaires/delete en method POST »</p>
+<p>Fonction supprimant un titulaire, à utiliser en tant qu’API en JS</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>résultat de la suppression</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Json</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.etape">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">etape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.etape" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categories/ »</p>
+<p>Fonction affichant la liste des catégories d’une étape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>template etape.html</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.etape_change_participants">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">etape_change_participants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.etape_change_participants" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categories/ » en method POST</p>
+<p>Fonction générant la liste des participants à une étape et la structure de courses nécessaire</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>redirect vers views.etape</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.etapes">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">etapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.etapes" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etapes/ »</p>
+<p>Fonction affichant la liste des étapes d’un championnat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>template etapes.html</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.genere_phase_suivante">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">genere_phase_suivante</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorie_type_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.genere_phase_suivante" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categorie-&lt;categorie_type_id&gt;/races » en methode POST</p>
+<p>Fonction générant la phase de course suivante (phase demi-finale, finale, etc …)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+<li><p><strong>categorie_type_id</strong> (<em>int</em>) – id de la catégorie</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>redirection vers views.races</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.get_championnats_dict">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">get_championnats_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.get_championnats_dict" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de création d’un dictionnaire de championnats</p>
+<p>Certaines fonction nécessite une structure de données particulière, cette fonction la créée.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>dictionnaire de championnats</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.get_etapes_dict">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">get_etapes_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">championnat</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.get_etapes_dict" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de création d’un dictionnaire de étapes</p>
+<p>Certaines fonction nécessite une structure de données particulière, cette fonction la créée.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>dictionnaire de l’étapes</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.get_titulaires_dict">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">get_titulaires_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">titulaires</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.get_titulaires_dict" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de création d’un dictionnaire de titulaires</p>
+<p>Certaines fonction nécessite une structure de données particulière, cette fonction la créée.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>dictionnaire de titulaires</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.home">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">home</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.home" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « / »</p>
+<p>Fonction affichant la page d’acceuil.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>template logged.html</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.manches">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">manches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorie_type_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">race_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.manches" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categorie-&lt;categorie_type_id&gt;/race-&lt;race_id&gt;/manches »</p>
+<p>Fonction affichant la liste des manches d’une race</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+<li><p><strong>categorie_type_id</strong> (<em>int</em>) – id de la catégorie</p></li>
+<li><p><strong>race_id</strong> (<em>int</em>) – id de la race</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>template manches.html</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.manches_post">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">manches_post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorie_type_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">race_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.manches_post" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categorie-&lt;categorie_type_id&gt;/race-&lt;race_id&gt;/manches » en methode POST</p>
+<p>Fonction enregistrant l’ordre d’arrivé des pilotes d’une manche</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+<li><p><strong>categorie_type_id</strong> (<em>int</em>) – id de la catégorie</p></li>
+<li><p><strong>race_id</strong> (<em>int</em>) – id de la race</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>redirection vers views.manches</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Redirect</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.races">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">races</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etape_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">championnat_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorie_type_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.races" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /championnat-&lt;championnat_id&gt;/etape-&lt;etape_id&gt;/categorie-&lt;categorie_type_id&gt;/races »</p>
+<p>Fonction affichant la liste des races d’une catégorie</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etape_id</strong> (<em>int</em>) – id de l’étape</p></li>
+<li><p><strong>championnat_id</strong> (<em>int</em>) – id du championnat</p></li>
+<li><p><strong>categorie_type_id</strong> (<em>int</em>) – id de la catégorie</p></li>
+</ul>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>template races.html</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.titulaires">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">titulaires</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.views.titulaires" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /titulaires/ »</p>
+<p>Fonction affichant la liste des titulaires.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>template titulaire.html</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="website.views.titulaires_by_ville">
+<span class="sig-prename descclassname"><span class="pre">website.views.</span></span><span class="sig-name descname"><span class="pre">titulaires_by_ville</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">club_ville</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#website.views.titulaires_by_ville" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction liée au end-point « /titulaires/&lt;club_ville&gt;/ »</p>
+<p>Fonction affichant la liste des titulaires d’un club.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paramètres</dt>
+<dd class="field-odd"><p><strong>club_ville</strong> (<em>str</em>) – Nom de la ville du club</p>
+</dd>
+<dt class="field-even">Renvoie</dt>
+<dd class="field-even"><p>template titulaires.html</p>
+</dd>
+<dt class="field-odd">Type renvoyé</dt>
+<dd class="field-odd"><p>Template</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-website">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-website" title="Lien permanent vers ce titre">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="website.create_app">
+<span class="sig-prename descclassname"><span class="pre">website.</span></span><span class="sig-name descname"><span class="pre">create_app</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#website.create_app" title="Lien permanent vers cette définition">¶</a></dt>
+<dd><p>Fonction de création de l’application</p>
+<p>Fonction permettant le parametrage et la création de l’application</p>
+<dl class="field-list simple">
+<dt class="field-odd">Renvoie</dt>
+<dd class="field-odd"><p>application Flask</p>
+</dd>
+<dt class="field-even">Type renvoyé</dt>
+<dd class="field-even"><p>Flask</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table des matières</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">website package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-website.auth">website.auth module</a></li>
+<li><a class="reference internal" href="#module-website.models">website.models module</a></li>
+<li><a class="reference internal" href="#module-website.views">website.views module</a></li>
+<li><a class="reference internal" href="#module-website">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>Cette page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/website.rst.txt"
+            rel="nofollow">Montrer le code source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Recherche rapide</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="Index général"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Index des modules Python"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Documentation UFOLEP 1.0.0</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">website package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022, FOURRE Pierre, SENGER Maxime.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+    </div>
+  </body>
+</html>

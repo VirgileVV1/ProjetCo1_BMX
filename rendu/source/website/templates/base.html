@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{% block title %}Home{% endblock %}</title>
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+
+        <link
+            href="{{ url_for('static', filename='main.css') }}"
+            rel="stylesheet"
+        >
+        <link
+            href="{{ url_for('static', filename='bootstrap.min.css')}}"
+            rel="stylesheet"
+        >
+        <link
+            href="{{ url_for('static', filename='aos.css')}}"
+            rel="stylesheet"
+        >
+        {% block custom_css %}{% endblock %}
+    </head>
+    <body>
+        {% block page_content %}
+        {% endblock %}
+
+        <script src="{{ url_for('static', filename='aos.js') }}" charset="utf-8"></script>
+        <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}" charset="utf-8"></script>
+        <script src="{{ url_for('static', filename='jquery.min.js') }}" charset="utf-8"></script>
+        <script>
+            AOS.init();
+        </script>
+        {% block custom_js %}
+        {% endblock %}
+    </body>
+</html>

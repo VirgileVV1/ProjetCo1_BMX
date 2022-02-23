@@ -1,0 +1,25 @@
+tr {
+    cursor: pointer;
+}
+
+.title {
+    display: flex;
+}
+
+td.img {
+    width: 2.5rem;
+}
+
+td.img img {
+    max-height: 100%;
+    width: auto;
+}
+
+.button {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.side-bar .items {
+  text-align: center;
+}

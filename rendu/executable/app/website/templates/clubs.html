@@ -1,0 +1,61 @@
+{% extends "logged.html" %}
+
+{% block logged_css %}
+<link
+    href="{{ url_for('static', filename='clubs.css') }}"
+    rel="stylesheet"
+>
+{% endblock %}
+
+{% block left_col %}
+<form class="" method="post">
+    <div class="title horizontal-flex mb-4">
+        <h3>Ajouter un club</h3>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="text" class="form-control {% if ville %}is-invalid{% endif %}" id="city" name="city">
+        <label for="city" class="form-label">Ville</label>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="text" class="form-control {% if initiales %}is-invalid{% endif %}" id="initiales" name="initiales" aria-describedby="initialesHelp">
+        <label for="initiales" class="form-label">Initiale(s)</label>
+        <div id="initialesHelp" class="form-text">Initiale(s) présent sur les plaques des pilotes</div>
+    </div>
+    <div class="horizontal-flex">
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block right_col %}
+<div class="title mb-4">
+    <h2>Clubs</h2>
+</div>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Ville</th>
+            <th scope="col">Initiale(s)</th>
+            <th scope="col">Nombres de titulaires</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for club in clubs %}
+        <tr onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';">
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ club.ville[0]|upper + club.ville[1:] }}</td>
+            <td>{{ club.initiales }}</td>
+            <td>{{ club.titulaires|length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+
+{% block custom_js %}
+<script type="text/javascript">
+    $('#clubs').addClass('active');
+</script>
+{% endblock %}

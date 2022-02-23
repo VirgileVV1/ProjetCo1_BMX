@@ -1,0 +1,25 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('views.home') }}">
+            <img class="logo" src="{{ url_for('static', filename='logo.svg') }}" alt="UFOLEP">
+        </a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a id="clubs" class="nav-link" href="{{ url_for('views.clubs') }}">Clubs</a>
+                </li>
+                <li class="nav-item">
+                    <a id="titulaires" class="nav-link" href="{{ url_for('views.titulaires') }}">Titulaires</a>
+                </li>
+                <li class="nav-item">
+                    <a id="championnats" class="nav-link" href="{{ url_for('views.championnats') }}">Championnats</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="btn btn-outline-danger" href="{{ url_for('auth.logout') }}">Déconnexion</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

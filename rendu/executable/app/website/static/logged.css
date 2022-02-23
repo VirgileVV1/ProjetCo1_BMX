@@ -1,0 +1,14 @@
+.left-main-col {
+    overflow-x: hidden;
+    overflow-y: scroll visible;
+    background-color: var(--bs-gray-200);
+    height: 92vh;
+    padding: 1rem;
+}
+
+.right-main-col {
+    height: 90vh;
+    padding: 1rem;
+    overflow-x: hidden;
+    overflow-y: scroll visible;
+}

@@ -1,0 +1,115 @@
+{% extends "logged.html" %}
+
+{% block logged_css %}
+<link
+    href="{{ url_for('static', filename='titulaires.css') }}"
+    rel="stylesheet"
+>
+{% endblock %}
+
+{% block left_col %}
+<form class="" method="post">
+    <div class="title horizontal-flex mb-4">
+        <h3>Ajouter un titulaire</h3>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="text" class="form-control {% if name %}is-invalid{% endif %}" id="name" name="name">
+        <label for="name">Nom</label>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="text" class="form-control {% if surname %}is-invalid{% endif %}" id="surname" name="surname">
+        <label for="surname" class="form-label">Prénom</label>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="date" class="form-control {% if birthDate %}is-invalid{% endif %}" id="birthDate" name="birthDate">
+        <label for="birthDate" class="form-label">Date De Naissance</label>
+    </div>
+    <div class="mb-4">
+        <label for="club" class="form-label">Club</label>
+        <select id="club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
+            <option value="none" selected>Choisir un club</option>
+            {% for club in clubs %}
+            <option value="{{ club.id }}">{{club.ville[0]|upper + club.ville[1:]}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-floating mb-4">
+        <input type="number" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="plaqueNb" name="plaqueNb">
+        <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
+    </div>
+    <div class="mb-4">
+        <label for="sexe" class="form-label">Sexe</label>
+        <select id="sexe" name="sexeId" class="form-select {% if sexeId %}is-invalid{% endif %}">
+            <option value="none" selected>Choisir un sexe</option>
+            {% for sexe in sexes %}
+            <option value="{{ sexe.id }}">{{sexe.denomination}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="horizontal-flex">
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block right_col %}
+<div class="title mb-4">
+    {% if title != "tous" %}
+    <div class="center-flex me-2">
+        <a href="{{ url_for('views.clubs') }}"><img class="back" src="{{ url_for('static', filename='back.svg') }}" alt="Retour"></a>
+    </div>
+    {% endif %}
+    <h2>Titulaires ({{ title }})</h2>
+</div>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Nom</th>
+            <th scope="col">Prénom</th>
+            <th scope="col">Date de Naissance</th>
+            <th scope="col">Sexe</th>
+            <th scope="col">Club</th>
+            <th scope="col">Plaque</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for titulaire in titulaires %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td contenteditable="true">{{ titulaire.nom }}</td>
+            <td contenteditable="true">{{ titulaire.prenom }}</td>
+            <td contenteditable="true">{{ titulaire.date_naissance}}</td>
+            <td contenteditable="true">{{ titulaire.sexe }}</td>
+            <td contenteditable="true">{{ titulaire.club }}</td>
+            <td contenteditable="true">{{ titulaire.plaque }}</td>
+            <td class="img"><a onclick="delete_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+
+{% block logged_js %}
+<script type="text/javascript">
+
+    function delete_titulaire(titulaire_id, event) {
+        if (clicked(event)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_titulaire') }}",
+                    type: "POST",
+                    data: {
+                        "titulaire_id": titulaire_id,
+                    },
+                    success: function(result){location.reload();},
+                }
+            );
+        }
+    }
+
+    $('#titulaires').addClass('active');
+</script>
+{% endblock %}

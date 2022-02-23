@@ -1,0 +1,68 @@
+{% extends "logged.html" %}
+
+{% block logged_css %}
+<link
+    href="{{ url_for('static', filename='clubs.css') }}"
+    rel="stylesheet"
+>
+{% endblock %}
+
+{% block left_col %}
+<div class="side-bar center-flex h-100">
+  <div class="items">
+    <button class="btn btn-outline-primary" type="button" name="button" aria-describedby="downloadHelp" {% if not race.finis %}disabled{% endif %}>Télécharger feuille de course</button>
+    <div id="downloadHelp" class="form-text">Il faut d'abord avoir valider toutes les manches</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block right_col %}
+<div class="title mb-4">
+    <div class="center-flex me-2">
+        <a href="{{ url_for('views.races', championnat_id=championnat_id, etape_id=etape.id, categorie_type_id=categorie_type.id) }}"><img class="back" src="{{ url_for('static', filename='back.svg') }}" alt="Retour"></a>
+    </div>
+    <h2>Manches : {{ etape.championnat.championnat_type.type }} - {{ etape.championnat.annee }} - {{ club.ville }} - {{ categorie_type.name }} - {{ race.name }}</h2>
+</div>
+{% for manche in manches %}
+<form action="" method="post">
+  <h3 class="mt-5">Manche {{ loop.index }} :</h3>
+  <table class="table table-striped table-hover">
+      <thead>
+          <tr>
+              <th scope="col">Place Départ</th>
+              <th scope="col">Pilote</th>
+              <th scope="col">Place d'Arrivée</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for participant in manche.participations %}
+          <tr>
+              <th scope="row">{{ participant.place_depart }}</th>
+              <td>{{ participant.titulaire.nom }} {{ participant.titulaire.prenom }}</td>
+              <td>
+                  <select id="type" name="place_arrive_{{ participant.titulaire.id }}" class="form-select {% if type %}is-invalid{% endif %}">
+                      <option value="none" selected>Choisir une place</option>
+                      {% for index in range(1, manche.participations|length + 1) %}
+                      <option value="{{ index }}" {% if index == participant.resultat %}selected{% endif %}>{{ index }}</option>
+                      {% endfor %}
+                      <option value="none" {% if participant.resultat == 9 %}selected{% endif %}>N'a pas participé</option>
+                  </select>
+              </td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+  <input type="hidden" name="manche_id" value="{{ manche.id }}">
+  <div class="button">
+    <input type="submit" class="btn btn-outline-primary" name="" value="Valider Manche">
+  </div>
+</form>
+{% endfor %}
+{% endblock %}
+
+
+{% block custom_js %}
+<script type="text/javascript">
+    $('#championnats').addClass('active');
+</script>
+{% endblock %}
