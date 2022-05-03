@@ -21,6 +21,11 @@
         {% endfor %}
     </div>
     <div class="horizontal-flex">
+       <button onclick="select(event)" type="submit" class="btn btn-outline-primary">Tout sélectionner</button>
+    </div>
+
+    <br>
+    <div class="horizontal-flex">
         <button onclick="clicked(event)" type="submit" class="btn btn-outline-primary">Générer</button>
     </div>
 </form>
@@ -53,6 +58,36 @@
 </table>
 {% endblock %}
 
+{% block custom_js %}
+<script type="text/javascript">
+
+    var isChecked = false;
+    function select(e)
+    {
+        e.preventDefault();
+        if (isChecked == false){
+
+            for (let i=0; i<document.getElementsByClassName("form-check-input").length;i++){
+
+                document.getElementsByClassName("form-check-input")[i].checked=true;
+            }
+            isChecked = true;
+            document.getElementsByClassName("btn btn-outline-primary")[0].innerText = "Tout désélectionner";
+        }else{
+            for (let i=0; i<document.getElementsByClassName("form-check-input").length;i++){
+
+                document.getElementsByClassName("form-check-input")[i].checked=false;
+            }
+            isChecked = false;
+            document.getElementsByClassName("btn btn-outline-primary")[0].innerText = "Tout sélectionner";
+        }
+
+
+    }
+    $('#championnats').addClass('active');
+
+</script>
+{% endblock %}
 
 {% block custom_js %}
 <script type="text/javascript">
