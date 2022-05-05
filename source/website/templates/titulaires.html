@@ -78,13 +78,36 @@
         {% for titulaire in titulaires %}
         <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td contenteditable="true">{{ titulaire.nom }}</td>
-            <td contenteditable="true">{{ titulaire.prenom }}</td>
-            <td contenteditable="true">{{ titulaire.date_naissance}}</td>
-            <td contenteditable="true">{{ titulaire.sexe }}</td>
-            <td contenteditable="true">{{ titulaire.club }}</td>
-            <td contenteditable="true">{{ titulaire.plaque }}</td>
+            <td id = "new_nom" contenteditable="true">{{ titulaire.nom }}</td>
+            <td id = "new_prenom" contenteditable="true">{{ titulaire.prenom }}</td>
+
+
+            <td> <select id = "new_sexe" >
+            <option> {{ titulaire.sexe }} </option>
+            {% for sexe in sexes %}
+                {% if sexe.denomination != titulaire.sexe %}
+                    <option> {{sexe.denomination}} </option>
+                {% endif %}
+            {% endfor %}
+        </select>
+            </td>
+
+
+
+            <td> <select id = "new_club">
+
+            <option > {{ titulaire.club }} </option>
+            {% for club in clubs %}
+                {% if club.ville[0]|upper + club.ville[1:] != titulaire.club %}
+                    <option>{{ club.ville[0]|upper + club.ville[1:] }}</option>
+                {% endif %}
+            {% endfor %}
+        </select></td>
+
+            <td id="new_plaque" contenteditable="true" >{{ titulaire.plaque }}</td>
             <td class="img"><a onclick="delete_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+            <td class="img"><a onclick="update_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Modifier"></a></td>
+
         </tr>
         {% endfor %}
     </tbody>
@@ -109,6 +132,35 @@
             );
         }
     }
+    
+    function update_titulaire(titulaire_id, event)
+    {
+
+        new_nom = document.getElementById('new_nom').innerHTML;
+        new_prenom = document.getElementById('new_prenom').innerHTML;
+        //new_dateNaissance = document.getElementById('new_dateNaissance').innerHTML;
+        new_sexe = document.getElementById('new_sexe').innerHTML;
+        new_club = document.getElementById('new_club').innerHTML;
+        new_plaque = document.getElementById('new_plaque').innerHTML;
+
+        $.ajax({
+        url: "{{ url_for('views.update_titulaire') }}",
+                    type: "POST",
+                    data: {
+                        "titulaire_id": titulaire_id,
+                        "titulaire_nom": new_nom,
+                        "titulaire_prenom":new_prenom,
+                        // "titulaire_dateNaissance": new_dateNaissance,
+                        "titulaire_sexe" : new_sexe,
+                        "titulaire_club" : new_club,
+                        "titulaire_plaque" : new_plaque,
+                    },
+
+                }
+            );
+
+    }
+
 
     $('#titulaires').addClass('active');
 </script>
