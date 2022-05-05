@@ -249,6 +249,46 @@ def add_titulaire() :
     return redirect(url_for('views.titulaires'))
 
 
+@views.route("/titulaires/update", methods=['POST'])
+@login_required
+def update_titulaire() :
+    """Fonction liée au end-point "/titulaires/ en method POST"
+
+    Fonction modifiant un titulaire
+
+    Returns:
+        Redirect: redirection vers views.titulaire
+
+    """
+
+    titulaire_id = request.form.get('titulaire_id')
+    new_name = request.form.get('titulaire_nom')
+    new_prenom = request.form.get('titulaire_prenom')
+   # new_dateNaissance = request.form.get('titulaire_dateNaissance')
+    new_sexe = request.form.get('titulaire_sexe')
+    new_club = request.form.get('titulaire_club')
+    new_plaque = request.form.get('titulaire_plaque')
+
+    print(new_name,new_prenom,new_sexe, new_club, new_plaque)
+
+    if titulaire_id is not None:
+        titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
+
+        if titulaire is not None:
+            titulaire.nom = new_name
+            titulaire.nom = new_prenom
+           # titulaire.nom = new_dateNaissance
+            titulaire.nom = new_sexe
+            titulaire.nom = new_club
+            titulaire.nom = new_plaque
+
+            db.session.commit()
+
+            return jsonify({'status': 'ok'})
+
+        else:
+            return jsonify({'status': 'error'})
+
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
 def delete_titulaire() :
