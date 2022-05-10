@@ -22,15 +22,20 @@ rgba(0, 0, 0, 0.3);
     z-index: 100;
     display: none;
     justify-content: center;
-    align-items: center;
+    padding-top: 2vh;
+}
+
+.mg {
+    margin-bottom: 10px;
 }
 
 #container-form {
+    padding: 20px;
     position: relative;
     background-color: white;
-    height: 75%;
     width: 700px;
     border-radius: 20px;
+    height: fit-content;
 }
 
 

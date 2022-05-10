@@ -10,23 +10,26 @@
 {% block edit_form %}
 <div id="edit_form">
     <div id="container-form">
-        <form action="">
-            <div class="title horizontal-flex mb-4">
+        <form action="{{url_for('views.update_titulaire')}}" method="post">
+            <div class="title horizontal-flex mg">
                 <h3>Modifier le titulaire</h3>
             </div>
-            <div class="form-floating mb-4">
+            <div>
+                <input style="display: none" name="id" id="edited-id" type="text" >
+            </div>
+            <div class="form-floating mg">
                 <input type="text" class="form-control {% if name %}is-invalid{% endif %}" id="edited-name" name="name">
                 <label for="name">Nom</label>
             </div>
-            <div class="form-floating mb-4">
+            <div class="form-floating mg">
                 <input type="text" class="form-control {% if surname %}is-invalid{% endif %}" id="edited-surname" name="surname">
                 <label for="surname" class="form-label">Prénom</label>
             </div>
-            <div class="form-floating mb-4">
+            <div class="form-floating mg">
                 <input type="date" class="form-control {% if birthDate %}is-invalid{% endif %}" id="edited-birthDate" name="birthDate">
                 <label for="birthDate" class="form-label">Date De Naissance</label>
             </div>
-            <div class="mb-4">
+            <div class="mg">
                 <label for="club" class="form-label">Club</label>
                 <select id="edited-club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
                     <option value="none" selected>Choisir un club</option>
@@ -35,7 +38,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-floating mb-4">
+            <div class="form-floating mg">
                 <input type="number" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="edited-plaqueNb" name="plaqueNb">
                 <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
             </div>
@@ -140,31 +143,12 @@
         {% for titulaire in titulaires %}
         <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td id = "new_nom" contenteditable="true"  > {{ titulaire.nom }}</td>
-            <td id = "new_prenom" contenteditable="true">{{ titulaire.prenom }}</td>
-            <td> <input type="date" value="{{titulaire.date_naissance.split('/')[2] +'-'+titulaire.date_naissance.split('/')[1]+'-'+titulaire.date_naissance.split('/')[0] }}"> </td>
-            <td>
-                <select id = "new_sexe">
-                <option> {{ titulaire.sexe }} </option>
-                {% for sexe in sexes %}
-                    {% if sexe.denomination != titulaire.sexe %}
-                        <option> {{sexe.denomination}} </option>
-                    {% endif %}
-                {% endfor %}
-                </select>
-            </td>
-            <td>
-                <select id = "new_club" >
-                    <option > {{ titulaire.club }} </option>
-                    {% for club in clubs %}
-                        {% if club.ville[0]|upper + club.ville[1:] != titulaire.club %}
-                            <option>{{ club.ville[0]|upper + club.ville[1:] }}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </td>
-
-            <td id="new_plaque" contenteditable="true" >{{ titulaire.plaque }}</td>
+            <td contenteditable="false">{{ titulaire.nom }}</td>
+            <td contenteditable="false">{{ titulaire.prenom }}</td>
+            <td> {{titulaire.date_naissance}} </td>
+            <td contenteditable="false">{{ titulaire.sexe }}</td>
+            <td contenteditable="false">{{ titulaire.club }}</td>
+            <td contenteditable="false">{{ titulaire.plaque }}</td>
             <td class="img"><a class="p{{loop.index}}" onclick="showEditForm(event, {{ titulaire }})"><img src="{{ url_for('static', filename='update.png') }}" alt="Modifier"></a></td>
             <td class="img"><a onclick="delete_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
 
@@ -178,13 +162,10 @@
 {% block logged_js %}
 <script type="text/javascript">
 
-   // titulaire qu'on veut modifier
-    var TITULAIRE;
-
     function showEditForm(e, titulaire) {
         e.preventDefault();
-        TITULAIRE = titulaire;
-        console.log(titulaire)
+        document.getElementById('edited-id').value = titulaire.id;
+
         document.getElementById('edit_form').style.display = "flex";
         document.getElementById('edited-name').value = titulaire.nom;
         document.getElementById('edited-surname').value = titulaire.prenom;
@@ -206,6 +187,7 @@
         document.getElementById('edited-plaqueNb').value = nouvelle_plaque;
     }
 
+
     function hideEditForm(e) {
         e.preventDefault();
         document.getElementById('edit_form').style.display = "none";
@@ -220,47 +202,20 @@
                     data: {
                         "titulaire_id": titulaire_id,
                     },
-                    success: function(result){location.reload();},
+                    success: function(result){
+                        location.reload();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if(xhr.status == 500) {
+                            alert("Vous ne pouvez pas supprimer un titulaire qui a un championnat en cours");
+                        }
+                        location.reload();
+                    }
                 }
             );
         }
     }
     
-    function update_titulaire(titulaire_id, numero, event)
-    {
-
-        new_nom = document.getElementById('new_nom').innerHTML;
-        new_prenom = document.getElementById('new_prenom').innerHTML;
-        //new_dateNaissance = document.getElementById('new_dateNaissance').innerHTML;
-        new_sexe = document.getElementById('new_sexe').innerHTML;
-        new_club = document.getElementById('new_club').innerHTML;
-        new_plaque = document.getElementById('new_plaque').innerHTML;
-
-        $.ajax({
-        url: "{{ url_for('views.update_titulaire') }}",
-                    type: "POST",
-                    data: {
-                        "titulaire_id": titulaire_id,
-                        "titulaire_nom": new_nom,
-                        "titulaire_prenom":new_prenom,
-                        // "titulaire_dateNaissance": new_dateNaissance,
-                        "titulaire_sexe" : new_sexe,
-                        "titulaire_club" : new_club,
-                        "titulaire_plaque" : new_plaque,
-                    },
-                    success: function(result){
-                        console.log("oui")
-                        console.log(numero)
-                        document.getElementById('form_update').style.display = "none";
-                     
-                        location.reload();
-                    },
-                }
-            );
-
-        //document.getElementsByClassName('p'+numero)[0].style.display = "none";
-
-    }
 
 
     $('#titulaires').addClass('active');

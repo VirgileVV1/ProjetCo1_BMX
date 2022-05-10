@@ -1,3 +1,4 @@
+from tkinter.tix import INTEGER
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 import sqlalchemy
@@ -249,7 +250,7 @@ def add_titulaire() :
     return redirect(url_for('views.titulaires'))
 
 
-@views.route("/titulaires/update", methods=['POST'])
+@views.route("/titulaires/edit", methods=['POST'])
 @login_required
 def update_titulaire() :
     """Fonction liée au end-point "/titulaires/ en method POST"
@@ -260,34 +261,33 @@ def update_titulaire() :
         Redirect: redirection vers views.titulaire
 
     """
-
-    titulaire_id = request.form.get('titulaire_id')
-    new_name = request.form.get('titulaire_nom')
-    new_prenom = request.form.get('titulaire_prenom')
-   # new_dateNaissance = request.form.get('titulaire_dateNaissance')
-    new_sexe = request.form.get('titulaire_sexe')
-    new_club = request.form.get('titulaire_club')
-    new_plaque = request.form.get('titulaire_plaque')
-
-    print(new_name,new_prenom,new_sexe, new_club, new_plaque)
+    titulaire_id = request.form.get('id')
 
     if titulaire_id is not None:
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
 
         if titulaire is not None:
-            titulaire.nom = new_name
-            titulaire.nom = new_prenom
-           # titulaire.nom = new_dateNaissance
-            titulaire.nom = new_sexe
-            titulaire.nom = new_club
-            titulaire.nom = new_plaque
+            titulaire.nom = request.form.get('name')
+            titulaire.prenom = request.form.get('surname')
+            titulaire.sexe_id = request.form.get('sexeId')
+            titulaire.numero_plaque = request.form.get('plaqueNb')
+            date = request.form.get('birthDate').split('-')
+            date_ = datetime(int(date[0]), int(date[1]),int(date[2]))
+            titulaire.date_naissance = date_
+            club_name = request.form.get('clubId')
+            clubs = Club.query.all()
+            for i in range(len(clubs)):
+                if (club_name.lower() == clubs[i].ville.lower()):
+                    club_id = clubs[i].id
+            titulaire.club_id = club_id
 
             db.session.commit()
 
-            return jsonify({'status': 'ok'})
+            return redirect('/titulaires')
 
         else:
             return jsonify({'status': 'error'})
+    return jsonify({'status': 'error'})
 
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
