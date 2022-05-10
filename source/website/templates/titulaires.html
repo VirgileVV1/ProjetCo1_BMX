@@ -8,6 +8,19 @@
 {% endblock %}
 
 {% block left_col %}
+<form class="" method="POST" action="/add_titulaires/" enctype="multipart/form-data">
+    <div class="title horizontal-flex mb-4">
+        <h3>Ajouter des titulaires</h3>
+    </div>
+     <div class="form-floating mb-4">
+        <input type="file" name="xls" accept=".xls">
+     </div>
+       <div class="horizontal-flex">
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </div>
+
+    <HR ALIGN=CENTER WIDTH="225">
+</form>
 <form class="" method="post">
     <div class="title horizontal-flex mb-4">
         <h3>Ajouter un titulaire</h3>
@@ -29,7 +42,7 @@
         <select id="club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
             <option value="none" selected>Choisir un club</option>
             {% for club in clubs %}
-            <option value="{{ club.id }}">{{club.ville[0]|upper + club.ville[1:]}}</option>
+            <option value="{{ club.id }}">{{club.nomClub[0]|upper + club.nomClub[1:]}}</option>
             {% endfor %}
         </select>
     </div>
@@ -49,6 +62,8 @@
     <div class="horizontal-flex">
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </div>
+
+
 </form>
 {% endblock %}
 
@@ -111,5 +126,15 @@
     }
 
     $('#titulaires').addClass('active');
+
+
+    function getFilePath(){
+         $('input[type=file]').change(function () {
+            console.log(this.files[0].mozFullPath);
+         });
+    }
+
+
 </script>
+
 {% endblock %}

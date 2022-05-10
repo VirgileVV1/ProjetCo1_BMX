@@ -4,6 +4,9 @@ import sqlalchemy
 from datetime import datetime
 import random
 from math import ceil
+import numpy as np
+
+import xlrd
 
 from .__init__ import db
 from .models import User, Titulaire, Club, Sexe, Championnat, Championnat_type, Etape, Categorie_type, Participant_etape, Race_type, Couloir, Race, Participant_race, Manche, Participant_manche, Categorie, Participant_categorie
@@ -237,17 +240,222 @@ def add_titulaire() :
         clubs = Club.query.all()
         sexes = Sexe.query.all()
         return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, sexeId=True)
-
+    print("oui")
+    print(sexe_id)
 
     date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
     if len(numero_plaque) < 2 :
         numero_plaque = "0" + numero_plaque
+
+
+    print("test une personne")
+    print(nom)
+    print(prenom)
+    print(date_naissance)
+    print(club_id)
+    print(numero_plaque)
+    print(sexe_id)
     new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=numero_plaque, sexe_id=sexe_id)
     db.session.add(new_titulaire)
     db.session.commit()
 
     return redirect(url_for('views.titulaires'))
 
+@views.route("/add_titulaires/", methods=['GET','POST'])
+@login_required
+def add_titulaires() :
+    """Fonction liée au end-point "/titulaires/"
+
+    Fonction ajoutant des titulaires via un fichier xls
+
+    Returns:
+        Redirect: redirection vers views.titulaire
+
+    """
+    if request.method == 'POST':
+        """TEST DEBUGER SUR L OBJET FILE"""
+        """print("test")
+        file = request.files['xls']
+        print(file.read())
+        lignes = file.readlines()"""
+
+        uploaded_file = request.files['xls']
+        if uploaded_file.filename != '':
+            uploaded_file.save(uploaded_file.filename)
+
+        files = xlrd.open_workbook(uploaded_file.filename)
+
+        file = files.sheet_by_index(0)
+
+        indiceFirstRow = file.nrows-1
+        indiceFirstColumn = file.ncols-1
+
+        """pour avoir la première colonne"""
+        while(file.cell_value(indiceFirstRow,indiceFirstColumn) != '' and indiceFirstColumn != 0):
+            indiceFirstColumn -= 1
+
+        """se redécaler d'une colonne vers la droite"""
+        if(file.cell_value(indiceFirstRow,indiceFirstColumn) == ''):
+            indiceFirstColumn += 1
+
+        while(file.cell_value(indiceFirstRow,indiceFirstColumn) != '' and indiceFirstRow != 0):
+            indiceFirstRow -= 1
+
+        """se redécaler de deux cases vers le haut (titre)"""
+        if(file.cell_value(indiceFirstRow,indiceFirstColumn) == ''):
+            indiceFirstRow += 2
+        else:
+            indiceFirstRow += 1
+
+        np_nom = []
+        np_dateNaissance = []
+        np_club = []
+        np_plaque = []
+        np_sexe = []
+
+
+
+        for i in range(indiceFirstRow, file.nrows):
+            np_nom.append(file.cell_value(i, 0+indiceFirstColumn))
+            np_dateNaissance.append(file.cell_value(i, 1+indiceFirstColumn))
+            np_club.append(file.cell_value(i, 2+indiceFirstColumn))
+            np_plaque.append(file.cell_value(i, 3+indiceFirstColumn))
+            np_sexe.append(file.cell_value(i, 4+indiceFirstColumn))
+
+        np_nom = np.array(np_nom)
+        np_dateNaissance = np.array(np_dateNaissance)
+        np_club = np.array(np_club)
+        np_plaque = np.array(np_plaque)
+        np_sexe = np.array(np_sexe)
+
+        nom = np_nom[0]
+        prenom = "LOUIS"
+        date_naissance = np_dateNaissance[0]
+        club_id = np_club[0]
+        numero_plaque = np_plaque[0]
+        sexe_id = np_sexe[0]
+
+        "test fichier"
+        print(nom)
+        print(prenom)
+        print(date_naissance)
+        print(club_id)
+        print(numero_plaque)
+        print(sexe_id)
+
+
+        """if nom is None or nom == "":
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   name=True)
+
+
+        if prenom is None or prenom == "":
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   surname=True)
+
+        if date_naissance is None or date_naissance == "" or len(date_naissance.split("-")) != 3 or len(
+                date_naissance.split("-")[2]) <= 0 or len(date_naissance.split("-")[2]) > 2 or len(
+                date_naissance.split("-")[1]) <= 0 or len(date_naissance.split("-")[1]) > 2 or len(
+                date_naissance.split("-")[0]) < 4:
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   birthDate=True)
+
+
+        if club_id is None or club_id == "" or Club.query.filter_by(id=club_id).first() is None:
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   clubId=True)
+
+
+        if numero_plaque is None or numero_plaque == "" or not check_titulaire_number(
+                Club.query.filter_by(id=club_id).first().titulaires, numero_plaque) is not None or int(
+                numero_plaque) >= 100:
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   plaqueNb=True)
+
+        if sexe_id is None or sexe_id == "" or Sexe.query.filter_by(id=sexe_id).first() is None:
+            titulaires = Titulaire.query.all()
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+            return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes,
+                                   sexeId=True)
+        print("oui")
+        print(sexe_id)
+
+        date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
+        if len(numero_plaque) < 2:
+            numero_plaque = "0" + numero_plaque
+"""
+        new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id,
+                                  numero_plaque=numero_plaque, sexe_id=sexe_id)
+        db.session.add(new_titulaire)
+        db.session.commit()
+
+        """for ligne in lignes:
+            print(ligne)"""
+        print("test")
+        print(uploaded_file.filename)
+        """for ligne in lignes:
+            print(ligne)"""
+
+        """data = file.read()
+        print(data)
+        
+       file = request.files['xls']
+        print("test")
+        files = xlrd.open_workbook(file)"""
+        """file = request.files['xls']"""
+        """sheetRG = file.sheet_by_index(0)
+        nom = []
+        dateNaisssance = []
+        club = []
+        plaque = []
+        sexe = []
+
+        for i in range(1, sheetRG.ncols):
+            nom.append(file.cell_value(0, i))
+            dateNaisssance.append(file.cell_value(1, i))
+            club.append(file.cell_value(2, i))
+            plaque.append(file.cell_value(3, i))
+            sexe.append(file.cell_value(4, i))
+
+        nom = np.array(nom)
+        dateNaisssance = np.array(dateNaisssance)
+        club = np.array(club)
+        plaque = np.array(plaque)
+        sexe = np.array(sexe)
+
+        for i in range(1, nom.size):
+            print(nom[i])"""
+
+    """file = request.files['file']"""
+    """print(file.filename)"""
+    """lignes = file.readlines()"""
+    """for ligne in lignes:
+        print(ligne)"""
+    return redirect(url_for('views.titulaires'))
+    """mettre nom, prenom,... ce que j'ai dans le fichier
+    
+    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id,
+                              numero_plaque=numero_plaque, sexe_id=sexe_id)
+    db.session.add(new_titulaire)
+    db.session.commit()"""
+
+    """return redirect(url_for('views.titulaires'))"""
 
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
