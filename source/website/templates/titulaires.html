@@ -7,6 +7,62 @@
 >
 {% endblock %}
 
+{% block edit_form %}
+<div id="edit_form">
+    <div id="container-form">
+        <form action="">
+            <div class="title horizontal-flex mb-4">
+                <h3>Modifier le titulaire</h3>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="text" class="form-control {% if name %}is-invalid{% endif %}" id="edited-name" name="name">
+                <label for="name">Nom</label>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="text" class="form-control {% if surname %}is-invalid{% endif %}" id="edited-surname" name="surname">
+                <label for="surname" class="form-label">Prénom</label>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="date" class="form-control {% if birthDate %}is-invalid{% endif %}" id="edited-birthDate" name="birthDate">
+                <label for="birthDate" class="form-label">Date De Naissance</label>
+            </div>
+            <div class="mb-4">
+                <label for="club" class="form-label">Club</label>
+                <select id="edited-club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
+                    <option value="none" selected>Choisir un club</option>
+                    {% for club in clubs %}
+                    <option value="{{club.ville[0]|upper + club.ville[1:]}}">{{club.ville[0]|upper + club.ville[1:]}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="number" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="edited-plaqueNb" name="plaqueNb">
+                <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
+            </div>
+            <div class="mb-4">
+                <label for="sexe" class="form-label">Sexe</label>
+                <select id="edited-sexe" name="sexeId" class="form-select {% if sexeId %}is-invalid{% endif %}">
+                    <option value="none" selected>Choisir un sexe</option>
+                    {% for sexe in sexes %}
+                    <option value="{{ sexe.id }}">{{sexe.denomination}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="container-btns">
+                <button class="btn btn-outline-danger" id="btn-cancel" onclick="hideEditForm(event)"> Annuler </button>
+                <button type="submit" class="btn btn-outline-primary" id="btn-ok"> Confirmer </button>
+            </div>
+        </form>
+        
+
+      
+
+    </div>
+
+</div>
+{% endblock %}
+
 {% block left_col %}
 <form class="" method="post">
     <div class="title horizontal-flex mb-4">
@@ -26,7 +82,7 @@
     </div>
     <div class="mb-4">
         <label for="club" class="form-label">Club</label>
-        <select id="club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
+        <select id="edited-club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
             <option value="none" selected>Choisir un club</option>
             {% for club in clubs %}
             <option value="{{ club.id }}">{{club.ville[0]|upper + club.ville[1:]}}</option>
@@ -34,7 +90,7 @@
         </select>
     </div>
     <div class="form-floating mb-4">
-        <input type="number" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="plaqueNb" name="plaqueNb">
+        <input type="number" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="edited-plaqueNb" name="plaqueNb">
         <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
     </div>
     <div class="mb-4">
@@ -62,7 +118,7 @@
     <h2>Titulaires ({{ title }})</h2>
 </div>
 <table class="table table-striped table-hover">
-    <div style="display:flex; flex-direction: row">
+    <div id="messageUpdate" style="display:none; flex-direction: row">
         <p style="color:red;"> Après avoir modifié une information concernant un titulaire, il faut cliquer sur l'icone &nbsp
         <img style="width:20px; height:20px;" src="{{ url_for('static', filename='update.png') }}" alt="Modifier">
         &nbsp pour que les modifications soient effectuées</p>
@@ -84,11 +140,11 @@
         {% for titulaire in titulaires %}
         <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td id = "new_nom" contenteditable="true" oninput="printUpdateBtn({{loop.index}})" > {{ titulaire.nom }}</td>
+            <td id = "new_nom" contenteditable="true"  > {{ titulaire.nom }}</td>
             <td id = "new_prenom" contenteditable="true">{{ titulaire.prenom }}</td>
             <td> <input type="date" value="{{titulaire.date_naissance.split('/')[2] +'-'+titulaire.date_naissance.split('/')[1]+'-'+titulaire.date_naissance.split('/')[0] }}"> </td>
             <td>
-                <select id = "new_sexe" >
+                <select id = "new_sexe">
                 <option> {{ titulaire.sexe }} </option>
                 {% for sexe in sexes %}
                     {% if sexe.denomination != titulaire.sexe %}
@@ -98,7 +154,7 @@
                 </select>
             </td>
             <td>
-                <select id = "new_club">
+                <select id = "new_club" >
                     <option > {{ titulaire.club }} </option>
                     {% for club in clubs %}
                         {% if club.ville[0]|upper + club.ville[1:] != titulaire.club %}
@@ -109,7 +165,7 @@
             </td>
 
             <td id="new_plaque" contenteditable="true" >{{ titulaire.plaque }}</td>
-            <td class="img"><a style="display:none;" class="p{{loop.index}}" onclick="update_titulaire({{ titulaire.id }},{{ loop.index }} , event)"><img src="{{ url_for('static', filename='update.png') }}" alt="Modifier"></a></td>
+            <td class="img"><a class="p{{loop.index}}" onclick="showEditForm(event, {{ titulaire }})"><img src="{{ url_for('static', filename='update.png') }}" alt="Modifier"></a></td>
             <td class="img"><a onclick="delete_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
 
         </tr>
@@ -122,8 +178,37 @@
 {% block logged_js %}
 <script type="text/javascript">
 
-    function printUpdateBtn(numero) {
-        document.getElementsByClassName('p'+numero)[0].style.display = "flex";
+   // titulaire qu'on veut modifier
+    var TITULAIRE;
+
+    function showEditForm(e, titulaire) {
+        e.preventDefault();
+        TITULAIRE = titulaire;
+        console.log(titulaire)
+        document.getElementById('edit_form').style.display = "flex";
+        document.getElementById('edited-name').value = titulaire.nom;
+        document.getElementById('edited-surname').value = titulaire.prenom;
+        document.getElementById('edited-club').value = titulaire.club;
+        if (titulaire.sexe == 'Homme') {
+            document.getElementById('edited-sexe').value = 1;
+        } else {
+            document.getElementById('edited-sexe').value = 2;
+        }
+        let date = titulaire.date_naissance.split('/');
+        date = ""+date[2] + '-' + date[1] + '-' + date[0];
+        document.getElementById('edited-birthDate').value = date;
+        let nouvelle_plaque;
+        for (let i = 0; i < titulaire.plaque.length; i++) {
+            if (Number(titulaire.plaque[i]) != NaN) {
+                nouvelle_plaque = ""+titulaire.plaque[i];
+            }
+        }
+        document.getElementById('edited-plaqueNb').value = nouvelle_plaque;
+    }
+
+    function hideEditForm(e) {
+        e.preventDefault();
+        document.getElementById('edit_form').style.display = "none";
     }
 
     function delete_titulaire(titulaire_id, event) {
@@ -166,7 +251,9 @@
                     success: function(result){
                         console.log("oui")
                         console.log(numero)
-                        document.getElementsByClassName('p'+numero)[0].style.display = "none"; location.reload();
+                        document.getElementById('form_update').style.display = "none";
+                     
+                        location.reload();
                     },
                 }
             );
