@@ -253,7 +253,7 @@ def add_titulaire() :
 @views.route("/titulaires/edit", methods=['POST'])
 @login_required
 def update_titulaire() :
-    """Fonction liée au end-point "/titulaires/ en method POST"
+    """Fonction liée au end-point "/titulaires/edit en method POST"
 
     Fonction modifiant un titulaire
 
