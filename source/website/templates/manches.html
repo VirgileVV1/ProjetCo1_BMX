@@ -10,8 +10,10 @@
 {% block left_col %}
 <div class="side-bar center-flex h-100">
   <div class="items">
-    <button class="btn btn-outline-primary" type="button" name="button" aria-describedby="downloadHelp" {% if not race.finis %}disabled{% endif %}>Télécharger feuille de course</button>
-    <div id="downloadHelp" class="form-text">Il faut d'abord avoir valider toutes les manches</div>
+      <form id="downloadForm">
+          <button formaction="{{ url_for('views.download_form_post', championnat_id=championnat_id, etape_id= etape.id, categorie_type_id = categorie_type.id, race_id=race.id) }}" formmethod="post" class="btn btn-outline-primary" type="submit" name="button" aria-describedby="downloadHelp" {% if not race.finie %}disabled{% endif %}>Télécharger feuille de course</button>
+        </form>
+    <div id="downloadHelp" class="form-text">Il faut d'abord avoir validé toutes les manches</div>
   </div>
 </div>
 {% endblock %}
@@ -38,9 +40,9 @@
           {% for participant in manche.participations %}
           <tr>
               <th scope="row">{{ participant.place_depart }}</th>
-              <td>{{ participant.titulaire.nom }} {{ participant.titulaire.prenom }}</td>
+              <td>{{ participant.titulaire_manche.nom }} {{ participant.titulaire_manche.prenom }}</td>
               <td>
-                  <select id="type" name="place_arrive_{{ participant.titulaire.id }}" class="form-select {% if type %}is-invalid{% endif %}">
+                  <select id="type" name="place_arrive_{{ participant.titulaire_manche.id }}" class="form-select {% if type %}is-invalid{% endif %}">
                       <option value="none" selected>Choisir une place</option>
                       {% for index in range(1, manche.participations|length + 1) %}
                       <option value="{{ index }}" {% if index == participant.resultat %}selected{% endif %}>{{ index }}</option>

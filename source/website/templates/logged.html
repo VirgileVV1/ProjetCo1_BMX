@@ -27,11 +27,15 @@
 {% endblock %}
 {% block custom_js %}
 <script>
-function clicked(e)
+function clicked(e,idChampionnat)
 {
-    if(!confirm('Êtes-vous sûr ?')) {
+    if(!confirm('Êtes-vous sûr de supprimer '+idChampionnat+' ?')) {
         e.preventDefault();
         return false;
+    }
+    else{
+        //appeler fonction de suppression de championnat
+        window.location.pathname = "/supprimer_championnat_"+idChampionnat+"/"
     }
     return true;
 }
