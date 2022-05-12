@@ -1,5 +1,6 @@
 from crypt import methods
 from operator import indexOf
+from tkinter.tix import INTEGER
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 import sqlalchemy
@@ -253,6 +254,45 @@ def add_titulaire() :
 
     return redirect(url_for('views.titulaires'))
 
+
+@views.route("/titulaires/edit", methods=['POST'])
+@login_required
+def update_titulaire() :
+    """Fonction liée au end-point "/titulaires/edit en method POST"
+
+    Fonction modifiant un titulaire
+
+    Returns:
+        Redirect: redirection vers views.titulaire
+
+    """
+    titulaire_id = request.form.get('id')
+
+    if titulaire_id is not None:
+        titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
+
+        if titulaire is not None:
+            titulaire.nom = request.form.get('name')
+            titulaire.prenom = request.form.get('surname')
+            titulaire.sexe_id = request.form.get('sexeId')
+            titulaire.numero_plaque = request.form.get('plaqueNb')
+            date = request.form.get('birthDate').split('-')
+            date_ = datetime(int(date[0]), int(date[1]),int(date[2]))
+            titulaire.date_naissance = date_
+            club_name = request.form.get('clubId')
+            clubs = Club.query.all()
+            for i in range(len(clubs)):
+                if (club_name.lower() == clubs[i].ville.lower()):
+                    club_id = clubs[i].id
+            titulaire.club_id = club_id
+
+            db.session.commit()
+
+            return redirect('/titulaires')
+
+        else:
+            return jsonify({'status': 'error'})
+    return jsonify({'status': 'error'})
 
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
