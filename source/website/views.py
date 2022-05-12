@@ -252,7 +252,7 @@ def add_titulaire() :
 
 @views.route("/titulaires/edit", methods=['POST'])
 @login_required
-def update_titulaire() :
+def edit_titulaire() :
     """Fonction liée au end-point "/titulaires/edit en method POST"
 
     Fonction modifiant un titulaire
@@ -270,10 +270,14 @@ def update_titulaire() :
             titulaire.nom = request.form.get('name')
             titulaire.prenom = request.form.get('surname')
             titulaire.sexe_id = request.form.get('sexeId')
-            titulaire.numero_plaque = request.form.get('plaqueNb')
-            date = request.form.get('birthDate').split('-')
-            date_ = datetime(int(date[0]), int(date[1]),int(date[2]))
-            titulaire.date_naissance = date_
+            numero_plaque = request.form.get('plaqueNb')
+            #print(len(request.form.get('plaqueNb')))
+            titulaire.numero_plaque = numero_plaque
+            if (len( request.form.get('plaqueNb')) == 1):
+                titulaire.numero_plaque = "0" + numero_plaque
+            str_date = request.form.get('birthDate').split('-')
+            date = datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
+            titulaire.date_naissance = date
             club_name = request.form.get('clubId')
             clubs = Club.query.all()
             for i in range(len(clubs)):
@@ -283,7 +287,15 @@ def update_titulaire() :
 
             db.session.commit()
 
-            return redirect('/titulaires')
+            #return redirect('/titulaires')
+            # Récupération des données nécessaires à l'affichage de la page
+            new_titulaires = get_titulaires_dict(Titulaire.query.all())
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+
+            # Retour de la page populer des valeurs passées en argument
+            print(new_titulaires)
+            return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes)
 
         else:
             return jsonify({'status': 'error'})
