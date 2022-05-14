@@ -1,3 +1,4 @@
+from tkinter.tix import INTEGER
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 import sqlalchemy
@@ -380,6 +381,57 @@ def add_titulaires() :
 
     return redirect(url_for('views.titulaires'))
 
+@views.route("/titulaires/edit", methods=['POST'])
+@login_required
+def edit_titulaire() :
+    """Fonction liée au end-point "/titulaires/edit en method POST"
+
+    Fonction modifiant un titulaire
+
+    Returns:
+        Redirect: redirection vers views.titulaire
+
+    """
+    titulaire_id = request.form.get('id')
+
+    if titulaire_id is not None:
+        titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
+
+        if titulaire is not None:
+            titulaire.nom = request.form.get('name')
+            titulaire.prenom = request.form.get('surname')
+            titulaire.sexe_id = request.form.get('sexeId')
+            numero_plaque = request.form.get('plaqueNb')
+            #print(len(request.form.get('plaqueNb')))
+            titulaire.numero_plaque = numero_plaque
+            if (len( request.form.get('plaqueNb')) == 1):
+                titulaire.numero_plaque = "0" + numero_plaque
+            str_date = request.form.get('birthDate').split('-')
+            date = datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
+            titulaire.date_naissance = date
+            club_name = request.form.get('clubId')
+            clubs = Club.query.all()
+            for i in range(len(clubs)):
+                if (club_name.lower() == clubs[i].ville.lower()):
+                    club_id = clubs[i].id
+            titulaire.club_id = club_id
+
+            db.session.commit()
+
+            #return redirect('/titulaires')
+            # Récupération des données nécessaires à l'affichage de la page
+            new_titulaires = get_titulaires_dict(Titulaire.query.all())
+            clubs = Club.query.all()
+            sexes = Sexe.query.all()
+
+            # Retour de la page populer des valeurs passées en argument
+            print(new_titulaires)
+            return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes)
+
+        else:
+            return jsonify({'status': 'error'})
+    return jsonify({'status': 'error'})
+
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
 def delete_titulaire() :
@@ -680,85 +732,44 @@ def etape_change_participants(etape_id, championnat_id) :
 
         db.session.commit()
 
-        #creation de l'architecture des courses + phases de pool
-        phase_pool = Race_type.query.filter_by(type="Pool").first()
-        for categorie_type in Categorie_type.query.all() :
-            participants_etape = Participant_etape.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type.id).all()
-            random.shuffle(participants_etape)
-            if participants_etape is not None :
-                nb_participants = len(participants_etape)
-                couloirs = Couloir.query.all()
-                random.shuffle(couloirs)
+        championnat = Championnat.query.filter_by(id=championnat_id).first()
+        championnat_type_id = championnat.championnat_type_id
+        
+        if championnat_type_id == 1:
 
-                if nb_participants > 0 :
-                    new_categorie = Categorie(etape_id=etape_id, categorie_type_id=categorie_type.id)
-                    db.session.add(new_categorie)
-                    db.session.commit()
+            #creation de l'architecture des courses + phases de pool
+            phase_pool = Race_type.query.filter_by(type="Pool").first()
+            for categorie_type in Categorie_type.query.all() :
+                participants_etape = Participant_etape.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type.id).all()
+                random.shuffle(participants_etape)
+                if participants_etape is not None :
+                    nb_participants = len(participants_etape)
+                    couloirs = Couloir.query.all()
+                    random.shuffle(couloirs)
 
-                    for participant_etape in participants_etape :
-                        new_participant_categorie = Participant_categorie(titulaire_id=participant_etape.titulaire_id, categorie_id=new_categorie.id)
-                        db.session.add(new_participant_categorie)
-                    db.session.commit()
-
-                if nb_participants > 0 and nb_participants <= 8 :
-                    race_a = Race(name="A", etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_pool.id, categorie_id=new_categorie.id)
-                    db.session.add(race_a)
-                    db.session.commit()
-
-                    for index_participant, participant_etape in enumerate(participants_etape) :
-                        new_participant_race = Participant_race(titulaire_id=participant_etape.titulaire_id, race_id=race_a.id, couloir_id=couloirs[index_participant].id)
-                        db.session.add(new_participant_race)
-                    db.session.commit()
-
-                    participants_race = Participant_race.query.filter_by(race_id=race_a.id)
-                    for i in range(5) :
-                        new_manche = Manche(race_id=race_a.id)
-                        db.session.add(new_manche)
+                    if nb_participants > 0 :
+                        new_categorie = Categorie(etape_id=etape_id, categorie_type_id=categorie_type.id)
+                        db.session.add(new_categorie)
                         db.session.commit()
 
-                        for index_participant, participant_race in enumerate(participants_race) :
-                            couloir = Couloir.query.filter_by(id=participant_race.couloir_id).first()
-                            if i == 0 :
-                                place_depart = couloir.couloir_1
-                            elif i == 1 :
-                                place_depart = couloir.couloir_2
-                            elif i == 2 :
-                                place_depart = couloir.couloir_3
-                            elif i == 3 :
-                                place_depart = couloir.couloir_4
-                            elif i == 4 :
-                                place_depart = couloir.couloir_5
-
-                            new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=place_depart)
-                            db.session.add(new_participant_manche)
+                        for participant_etape in participants_etape :
+                            new_participant_categorie = Participant_categorie(titulaire_id=participant_etape.titulaire_id, categorie_id=new_categorie.id)
+                            db.session.add(new_participant_categorie)
                         db.session.commit()
 
+                    if nb_participants > 0 and nb_participants <= 8 :
+                        race_a = Race(name="A", etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_pool.id, categorie_id=new_categorie.id)
+                        db.session.add(race_a)
+                        db.session.commit()
 
-                elif nb_participants >= 9 :
-                    race_names = ['A', 'B', 'C', 'D', 'E', 'F']
-                    nb_races = ceil(nb_participants/8)
-                    participants_par_race = [0 for i in range(nb_races)]
-
-                    for i in range(nb_participants) :
-                        participants_par_race[i%nb_races] += 1
-
-                    for index_race in range(nb_races) :
-                        new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_pool.id, categorie_id=new_categorie.id)
-                        db.session.add(new_race)
-
-                    races = Race.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type.id).all()
-                    index_participant_etape = 0
-                    for index_race, race in enumerate(races) :
-                        nb_participants_race = participants_par_race[index_race]
-                        for index_participant_race in range(nb_participants_race) :
-                            new_participant_race =  Participant_race(titulaire_id=participants_etape[index_participant_etape].titulaire_id, race_id=race.id, couloir_id=couloirs[index_participant_race].id)
+                        for index_participant, participant_etape in enumerate(participants_etape) :
+                            new_participant_race = Participant_race(titulaire_id=participant_etape.titulaire_id, race_id=race_a.id, couloir_id=couloirs[index_participant].id)
                             db.session.add(new_participant_race)
-                            index_participant_etape += 1
                         db.session.commit()
 
-                        participants_race = Participant_race.query.filter_by(race_id=race.id).all()
-                        for i in range(3) :
-                            new_manche = Manche(race_id=race.id)
+                        participants_race = Participant_race.query.filter_by(race_id=race_a.id)
+                        for i in range(5) :
+                            new_manche = Manche(race_id=race_a.id)
                             db.session.add(new_manche)
                             db.session.commit()
 
@@ -770,32 +781,234 @@ def etape_change_participants(etape_id, championnat_id) :
                                     place_depart = couloir.couloir_2
                                 elif i == 2 :
                                     place_depart = couloir.couloir_3
-
+                                elif i == 3 :
+                                    place_depart = couloir.couloir_4
+                                elif i == 4 :
+                                    place_depart = couloir.couloir_5
 
                                 new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=place_depart)
                                 db.session.add(new_participant_manche)
                             db.session.commit()
 
-                    phase_final = Race_type.query.filter_by(type="Finale").first()
-                    for index_race in range(nb_races) :
-                        new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
-                        db.session.add(new_race)
-                    db.session.commit()
 
-                    if nb_participants >= 17 :
-                        phase_demi = Race_type.query.filter_by(type="1/2 Finale").first()
-                        for index_race in range(2) :
-                            new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_demi.id, categorie_id=new_categorie.id)
+                    elif nb_participants >= 9 :
+                        race_names = ['A', 'B', 'C', 'D', 'E', 'F']
+                        nb_races = ceil(nb_participants/8)
+                        participants_par_race = [0 for i in range(nb_races)]
+
+                        for i in range(nb_participants) :
+                            participants_par_race[i%nb_races] += 1
+
+                        for index_race in range(nb_races) :
+                            new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_pool.id, categorie_id=new_categorie.id)
+                            db.session.add(new_race)
+
+                        races = Race.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type.id).all()
+                        index_participant_etape = 0
+                        for index_race, race in enumerate(races) :
+                            nb_participants_race = participants_par_race[index_race]
+                            for index_participant_race in range(nb_participants_race) :
+                                new_participant_race =  Participant_race(titulaire_id=participants_etape[index_participant_etape].titulaire_id, race_id=race.id, couloir_id=couloirs[index_participant_race].id)
+                                db.session.add(new_participant_race)
+                                index_participant_etape += 1
+                            db.session.commit()
+
+                            participants_race = Participant_race.query.filter_by(race_id=race.id).all()
+                            for i in range(3) :
+                                new_manche = Manche(race_id=race.id)
+                                db.session.add(new_manche)
+                                db.session.commit()
+
+                                for index_participant, participant_race in enumerate(participants_race) :
+                                    couloir = Couloir.query.filter_by(id=participant_race.couloir_id).first()
+                                    if i == 0 :
+                                        place_depart = couloir.couloir_1
+                                    elif i == 1 :
+                                        place_depart = couloir.couloir_2
+                                    elif i == 2 :
+                                        place_depart = couloir.couloir_3
+
+
+                                    new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=place_depart)
+                                    db.session.add(new_participant_manche)
+                                db.session.commit()
+
+                        phase_final = Race_type.query.filter_by(type="Finale").first()
+                        for index_race in range(nb_races) :
+                            new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
                             db.session.add(new_race)
                         db.session.commit()
 
-                        if nb_participants >= 33 :
-                            phase_quart = Race_type.query.filter_by(type="1/4 Finale").first()
-                            for index_race in range(4) :
+                        if nb_participants >= 17 :
+                            phase_demi = Race_type.query.filter_by(type="1/2 Finale").first()
+                            for index_race in range(2) :
                                 new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_demi.id, categorie_id=new_categorie.id)
                                 db.session.add(new_race)
                             db.session.commit()
 
+                            if nb_participants >= 33 :
+                                phase_quart = Race_type.query.filter_by(type="1/4 Finale").first()
+                                for index_race in range(4) :
+                                    new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_demi.id, categorie_id=new_categorie.id)
+                                    db.session.add(new_race)
+                                db.session.commit()
+        #championnat departemental
+        elif championnat_type_id == 2:
+            
+            
+            #creation de l'architecture des courses + phases seches
+            phase_seche = Race_type.query.filter_by(type="Seche").first()
+            
+            participants_total = Participant_etape.query.filter_by(etape_id=etape_id).all()
+            print(participants_total)
+            for categorie_type in Categorie_type.query.all() :
+                participants_etape = Participant_etape.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type.id).all()
+                
+                if participants_etape is not None :
+                    nb_participants = len(participants_etape)
+                    couloirs = Couloir.query.all()
+                    
+                    if nb_participants > 0 :
+                        new_categorie = Categorie(etape_id=etape_id, categorie_type_id=categorie_type.id)
+                        db.session.add(new_categorie)
+                        db.session.commit()
+
+                        for participant_etape in participants_etape :
+                            new_participant_categorie = Participant_categorie(titulaire_id=participant_etape.titulaire_id, categorie_id=new_categorie.id)
+                            db.session.add(new_participant_categorie)
+                        db.session.commit()
+
+                        #creation de 3 races seches
+                        for race_index in range (1, 4):
+                            race_i = Race(name=race_index, etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_seche.id, categorie_id=new_categorie.id)
+                            db.session.add(race_i)
+                            db.session.commit()
+                            
+                            for index_participant, participant_etape in enumerate(participants_etape) :
+                                new_participant_race_i = Participant_race(titulaire_id=participant_etape.titulaire_id, race_id=race_i.id, couloir_id=couloirs[0].id) #couloir_id par important
+                                db.session.add(new_participant_race_i)
+                                
+                            db.session.commit()
+                            
+                            pioche = [i for i in range (0, nb_participants)]
+                            print("pioche = ", pioche)
+                            
+                            
+                            
+                            while pioche != []:
+                                if nb_participants % 8 == 0:
+                                    
+                                    tirage = random.sample(pioche, 8)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                elif nb_participants % 7 == 0:
+                                    
+                                    tirage = random.sample(pioche, 7)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                elif nb_participants % 6 == 0:
+                                    
+                                    tirage = random.sample(pioche, 6)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                elif nb_participants % 5 == 0:
+                                    
+                                    tirage = random.sample(pioche, 5)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                else:
+                                    min_pioche = min(len(pioche), 6)
+                                    print("tirage de ", min_pioche, " elements dans pioche")
+                                    tirage = random.sample(pioche, min_pioche)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
 
 
 
@@ -842,6 +1055,7 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
         Redirect: redirection vers views.races
 
     """
+    
 
     if etape_id == request.form.get('etape_id') :
         etape = Etape.query.filter_by(id=etape_id).first()

@@ -15,12 +15,14 @@
 {% block page_content %}
     {% include 'navbar.html' %}
     <div class="row px-2">
+        {% block edit_form %}{% endblock %}
         <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-4 col-sm-4 col-4 left-main-col pt-3">
             {% block left_col %}{% endblock %}
         </div>
         <div class="col-xxl-10 col-xl-9 col-lg-8 col-md-8 col-sm-8 col-8 right-main-col pt-3">
             {% block right_col %}{% endblock %}
         </div>
+
     </div>
     {% block logged_content %}
     {% endblock %}
