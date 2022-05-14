@@ -15,7 +15,7 @@ from .models import User, Titulaire, Club, Sexe, Championnat, Championnat_type, 
 views = Blueprint("views", __name__)
 
 
-def get_titulaires_dict(titulaires) :
+def get_titulaires_dict(titulaires):
     """Fonction de création d'un dictionnaire de titulaires
 
     Certaines fonction nécessite une structure de données particulière, cette fonction la créée.
@@ -201,51 +201,50 @@ def add_titulaire() :
     """
 
     nom = request.form.get('name')
-    if nom is None or nom == "" :
-        titulaires = Titulaire.query.all()
+    if nom is None or nom == "":
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, name=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, name=True)
 
     prenom = request.form.get('surname')
     if prenom is None or prenom == "" :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, surname=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, surname=True)
 
     date_naissance = request.form.get('birthDate')
     if date_naissance is None or date_naissance == "" or len(date_naissance.split("-")) != 3 or len(date_naissance.split("-")[2]) <= 0 or len(date_naissance.split("-")[2]) > 2 or len(date_naissance.split("-")[1]) <= 0 or len(date_naissance.split("-")[1]) > 2 or len(date_naissance.split("-")[0]) < 4:
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, birthDate=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, birthDate=True)
 
     club_id = request.form.get('clubId')
     if club_id is None or club_id == "" or Club.query.filter_by(id=club_id).first() is None :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, clubId=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, clubId=True)
 
     numero_plaque = request.form.get('plaqueNb')
     if numero_plaque is None or numero_plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, numero_plaque) is not None or int(numero_plaque)>=100 :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, plaqueNb=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, plaqueNb=True)
 
     sexe_id = request.form.get('sexeId')
     if sexe_id is None or sexe_id == "" or Sexe.query.filter_by(id=sexe_id).first() is None :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, sexeId=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, sexeId=True)
 
     date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
     if len(numero_plaque) < 2 :
         numero_plaque = "0" + numero_plaque
-
     new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=numero_plaque, sexe_id=sexe_id)
     db.session.add(new_titulaire)
     db.session.commit()
