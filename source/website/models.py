@@ -49,7 +49,7 @@ class Club(db.Model) :
     __tablename__ = "club"
 
     id = db.Column(db.Integer, primary_key=True)
-    nomClub = db.Column(db.String(100), unique=True, nullable=False)
+    ville = db.Column(db.String(100), unique=True, nullable=False)
     initiales = db.Column(db.String(5), unique=True, nullable=False)
     titulaires = db.relationship('Titulaire', backref='club', lazy=True)
     etapes = db.relationship('Etape', backref='club', lazy=True)

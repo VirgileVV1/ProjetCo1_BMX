@@ -42,7 +42,7 @@
         <select id="club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
             <option value="none" selected>Choisir un club</option>
             {% for club in clubs %}
-            <option value="{{ club.id }}">{{club.nomClub[0]|upper + club.nomClub[1:]}}</option>
+            <option value="{{ club.id }}">{{club.ville[0]|upper + club.ville[1:]}}</option>
             {% endfor %}
         </select>
     </div>
