@@ -39,8 +39,10 @@ def get_titulaires_dict(titulaires):
             "date_naissance": titulaire.date_naissance.strftime("%d/%m/%Y"),
             "club": club.ville[0].upper() + club.ville[1:],
             "sexe": sexe.denomination,
-            "plaque": club.initiales.upper() + " " + str(titulaire.numero_plaque),
+            "plaque": str(titulaire.numero_plaque),
         })
+
+        # ancienne facon d'avoir la plaque :  "plaque": club.initiales.upper() + " " + str(titulaire.numero_plaque),
 
     return to_return
 
@@ -200,14 +202,16 @@ def add_titulaire() :
 
     """
 
-    nom = request.form.get('name')
+    nom = request.form.get('name').upper() # On met le nom de famille en majuscule
     if nom is None or nom == "":
         new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
         return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, name=True)
 
-    prenom = request.form.get('surname')
+    # On met le prenom en minscule sauf la premiere lettre
+    prenom = request.form.get('surname').lower()
+    prenom = prenom[0].upper() + prenom[1:]
     if prenom is None or prenom == "" :
         new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
@@ -228,8 +232,17 @@ def add_titulaire() :
         sexes = Sexe.query.all()
         return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, clubId=True)
 
-    numero_plaque = request.form.get('plaqueNb')
-    if numero_plaque is None or numero_plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, numero_plaque) is not None or int(numero_plaque)>=100 :
+    plaque = request.form.get('plaqueNb')
+    plaque = plaque[0].upper() + plaque[1:]
+    numero = plaque[1:] # on extrait le numero de la plaque
+    # on verifie ensuite que la plaque n'existe pas déjà
+    titulaires = Titulaire.query.all()
+    PlaqueExist = 0
+    for t in titulaires:
+        if (t.numero_plaque == plaque) :
+            PlaqueExist += 1
+
+    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=100 or len(plaque)>3:
         new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
@@ -242,10 +255,10 @@ def add_titulaire() :
         sexes = Sexe.query.all()
         return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, sexeId=True)
 
-    date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
-    if len(numero_plaque) < 2 :
-        numero_plaque = "0" + numero_plaque
-    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=numero_plaque, sexe_id=sexe_id)
+    date_naissance = datetime.datetime.strptime(date_naissance, '%Y-%m-%d')
+    if len(plaque) == 2 :
+        plaque = plaque[0] + "0" + plaque[1]
+    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=plaque, sexe_id=sexe_id)
     db.session.add(new_titulaire)
     db.session.commit()
 
@@ -380,6 +393,11 @@ def add_titulaires() :
 
     return redirect(url_for('views.titulaires'))
 
+"""
+/!\ TODO : l'id doit etre passé en parametre de l'url et de la fonction normalement
+et la route doit etre : /titulaires/<titulaire_id> et la fonction : edit_titulaire(titulaire_id):
+mais j'ai un pb dans l'html je n'arrive pas a passer le bon id en parametre
+"""
 @views.route("/titulaires/edit", methods=['POST'])
 @login_required
 def edit_titulaire() :
@@ -397,39 +415,53 @@ def edit_titulaire() :
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
 
         if titulaire is not None:
-            titulaire.nom = request.form.get('name')
-            titulaire.prenom = request.form.get('surname')
-            titulaire.sexe_id = request.form.get('sexeId')
-            numero_plaque = request.form.get('plaqueNb')
-            #print(len(request.form.get('plaqueNb')))
-            titulaire.numero_plaque = numero_plaque
-            if (len( request.form.get('plaqueNb')) == 1):
-                titulaire.numero_plaque = "0" + numero_plaque
+            nom = request.form.get('name').upper()
+            prenom = request.form.get('surname')
+            prenom = prenom[0].upper() + prenom[1:].lower()
+            sexe_id = request.form.get('sexeId')
+            plaque = request.form.get('plaqueNb')
+            if len(plaque) >= 4:
+                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 3 caracteres (1 lettre + 2 chiffres)
+            # si la plaque ne fait que 2 caractere, cela veut dire que le numero est < 10 donc on rajoute un 0 devant pour que ce soit plus joli
+            elif (len( plaque) == 2):
+                plaque = plaque[0].upper()+"0" + plaque[1]
+            else:
+                plaque = plaque[0].upper() + plaque[1:]
+
+            # on verifie ensuite que la plaque n'existe pas déjà
+            titulaires = Titulaire.query.all()
+            PlaqueExist = 0
+            for t in titulaires:
+                if (t.numero_plaque == plaque) and (int(t.id) != int(titulaire_id)):
+                    print("oui")
+                    PlaqueExist += 1
+
+            if (PlaqueExist >= 1):
+                return jsonify({'status': 'errorr'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
+
             str_date = request.form.get('birthDate').split('-')
-            date = datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
+            date = datetime.datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
             titulaire.date_naissance = date
             club_name = request.form.get('clubId')
             clubs = Club.query.all()
             for i in range(len(clubs)):
                 if (club_name.lower() == clubs[i].ville.lower()):
                     club_id = clubs[i].id
-            titulaire.club_id = club_id
+            #titulaire.club_id = club_id
 
+            titulaire.nom = nom
+            titulaire.prenom = prenom
+            titulaire.sexe_id = sexe_id
+            titulaire.numero_plaque = plaque
+            titulaire.club_id = club_id
             db.session.commit()
 
-            #return redirect('/titulaires')
-            # Récupération des données nécessaires à l'affichage de la page
-            new_titulaires = get_titulaires_dict(Titulaire.query.all())
-            clubs = Club.query.all()
-            sexes = Sexe.query.all()
-
-            # Retour de la page populer des valeurs passées en argument
-            print(new_titulaires)
-            return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes)
+            # Rechargement des donnees
+            return redirect(url_for('views.titulaires'))
 
         else:
-            return jsonify({'status': 'error'})
-    return jsonify({'status': 'error'})
+            return jsonify({'status': 'error'}) # le titulaire n\'a pas été trouvé dans la base de données'})
+    return jsonify({'status': 'error'}) # pas d'id trouve dans les parametres
 
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
