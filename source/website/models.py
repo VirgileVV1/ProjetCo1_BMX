@@ -99,8 +99,8 @@ class Categorie_type(db.Model) :
     min_age = db.Column(db.Integer, nullable=False)
     max_age = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    races =  db.relationship('Race', backref='categorie_type', lazy=True)
-    categories = db.relationship('Categorie', backref='categorie_type', lazy=True)
+    races =  db.relationship('Race', backref='categorie_type', lazy=True, cascade="all, delete")
+    categories = db.relationship('Categorie', backref='categorie_type', lazy=True, cascade="all, delete")
 
 class Championnat_type(db.Model) :
     """Représentation des types de championnats dans la base de données
@@ -118,7 +118,7 @@ class Championnat_type(db.Model) :
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)
     nb_etapes_max = db.Column(db.Integer, nullable=False)
-    championnats =  db.relationship('Championnat', backref='championnat_type', lazy=True)
+    championnats =  db.relationship('Championnat', backref='championnat_type', lazy=True, cascade="all, delete")
 
 class Championnat(db.Model) :
     """Représentation des championnats dans la base de données
@@ -136,7 +136,7 @@ class Championnat(db.Model) :
     id = db.Column(db.Integer, primary_key=True)
     championnat_type_id = db.Column(db.Integer, db.ForeignKey('championnat_type.id'), nullable=False)
     annee = db.Column(db.Integer, nullable=False)
-    etapes = db.relationship('Etape', backref='championnat', lazy=True)
+    etapes = db.relationship('Etape', backref='championnat', lazy=True, cascade="all, delete")
 
 class Etape(db.Model) :
     """Représentation des étapes dans la base de données
@@ -158,9 +158,9 @@ class Etape(db.Model) :
     championnat_id = db.Column(db.Integer, db.ForeignKey('championnat.id'), nullable=False)
     lieu_id = db.Column(db.Integer, db.ForeignKey('club.id'), nullable=False)
     finie = db.Column(db.Boolean, default=False)
-    participations = db.relationship('Participant_etape', backref='etape', lazy=True)
+    participations = db.relationship('Participant_etape', backref='etape', lazy=True, cascade="all, delete")
     races = db.relationship('Race', backref='etape', lazy=True)
-    categories = db.relationship('Categorie', backref='etape', lazy=True)
+    categories = db.relationship('Categorie', backref='etape', lazy=True, cascade="all, delete")
 
 class Participant_etape(db.Model) :
     """Représentation des participations à une étaps dans la base de données
@@ -214,8 +214,8 @@ class Categorie(db.Model) :
     demi_genere = db.Column(db.Boolean, default=False)
     finale_genere = db.Column(db.Boolean, default=False)
     finie = db.Column(db.Boolean, default=False)
-    races = db.relationship('Race', backref='categorie', lazy=True)
-    participations = db.relationship('Participant_categorie', backref='categorie', lazy=True)
+    races = db.relationship('Race', backref='categorie', lazy=True, cascade="all, delete")
+    participations = db.relationship('Participant_categorie', backref='categorie', lazy=True, cascade="all, delete")
 
 class Participant_categorie(db.Model) :
     """Représentation des participations à la catégorie dans la base de données
@@ -307,7 +307,7 @@ class Race(db.Model) :
     categorie_id = db.Column(db.Integer, db.ForeignKey('categorie.id'), nullable=False)
     finie = db.Column(db.Boolean, default=False)
     participations = db.relationship('Participant_race', backref='race', order_by=Participant_race.resultat, lazy=True)
-    manches = db.relationship('Manche', backref='race', lazy=True)
+    manches = db.relationship('Manche', backref='race', lazy=True, cascade="all, delete")
 
 class Race_type(db.Model) :
     """Représentation des types de races dans la base de données
@@ -323,7 +323,7 @@ class Race_type(db.Model) :
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)
-    races = db.relationship('Race', backref='race_type', lazy=True)
+    races = db.relationship('Race', backref='race_type', lazy=True, cascade="all, delete")
 
 class Participant_manche(db.Model) :
     """Représentation des participations à la manche dans la base de données
@@ -363,4 +363,4 @@ class Manche(db.Model) :
     id = db.Column(db.Integer, primary_key=True)
     race_id = db.Column(db.Integer, db.ForeignKey('race.id'), nullable=False)
     finie = db.Column(db.Boolean, default=False)
-    participations = db.relationship('Participant_manche', backref='manche', order_by=Participant_manche.place_depart, lazy=True)
+    participations = db.relationship('Participant_manche', backref='manche', order_by=Participant_manche.place_depart, lazy=True, cascade="all, delete")

@@ -453,6 +453,29 @@ def delete_titulaire() :
             return jsonify({'status': 'ok'})
         else :
             return jsonify({'status': 'error'})
+        
+@views.route("/championnats/delete", methods=['POST'])
+@login_required
+def delete_championnat() :
+    """Fonction liée au end-point "/championnats/delete en method POST"
+
+    Fonction supprimant un championnat, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    championnat_id = request.form.get('championnat_id')
+    if championnat_id is not None :
+        championnat = Championnat.query.filter_by(id=championnat_id).first()
+        if championnat is not None :
+            db.session.delete(championnat)
+            db.session.commit()
+
+            return jsonify({'status': 'ok'})
+        else :
+            return jsonify({'status': 'error'})
 
 @views.route("/clubs/")
 @login_required
@@ -893,7 +916,87 @@ def etape_change_participants(etape_id, championnat_id) :
                             print("pioche = ", pioche)
                             
                             
-                            
+                            if nb_participants % 8 == 0: #des manches de 8, pas de soucis
+                                for i in range(round(nb_participants / 8)):
+                                    tirage = random.sample(pioche, 8)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                    
+                                    
+                            else: #pas divisible par 8, donc on cherche la meilleure repartition de manches
+                                n = nb_participants
+                                k = round(int(n/8) + 1)
+                                z = n/k #le nombre d'éléments par sous ensemble en moyenne
+                                k1 = round((z - int(z))*k)# sous ensembles a E(z)+1 éléments
+                                k2 = round(k - k1) # sous ensembles a E(z) elements
+                                
+                                #remplissage des k1 sous ensembles
+                                z1 = round(int(z) + 1)
+                                for i in range(k1):
+                                    tirage = random.sample(pioche, z1)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    #print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        #print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                #remplissage des k2 sous ensembles
+                                z2 = round(int(z))
+                                for i in range(k2):
+                                    tirage = random.sample(pioche, z2)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    #print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        #print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                
+                            """
                             while pioche != []:
                                 if nb_participants % 8 == 0:
                                     
@@ -1008,7 +1111,7 @@ def etape_change_participants(etape_id, championnat_id) :
                                         db.session.add(new_participant_manche)
                                         index+=1
                                     db.session.commit()
-
+                                """
 
 
     return redirect(url_for('views.etape', etape_id=etape_id, championnat_id=Championnat.query.filter_by(id=etape.championnat_id).first().id))
