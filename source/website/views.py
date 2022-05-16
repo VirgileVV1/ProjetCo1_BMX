@@ -476,6 +476,29 @@ def delete_championnat() :
             return jsonify({'status': 'ok'})
         else :
             return jsonify({'status': 'error'})
+        
+@views.route("/etapes/delete", methods=['POST'])
+@login_required
+def delete_etape() :
+    """Fonction liée au end-point "/etapes/delete en method POST"
+
+    Fonction supprimant une etape, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    etape_id = request.form.get('etape_id')
+    if etape_id is not None :
+        etape = Etape.query.filter_by(id=etape_id).first()
+        if etape is not None :
+            db.session.delete(etape)
+            db.session.commit()
+
+            return jsonify({'status': 'ok'})
+        else :
+            return jsonify({'status': 'error'})
 
 @views.route("/clubs/")
 @login_required
