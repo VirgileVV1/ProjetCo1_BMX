@@ -1,6 +1,7 @@
+from cmath import log
 from crypt import methods
-from operator import indexOf
-from tkinter.tix import INTEGER
+from operator import index, indexOf
+#from tkinter.tix import INTEGER
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 import sqlalchemy
@@ -736,14 +737,11 @@ def races(etape_id, championnat_id, categorie_type_id) :
     races = Race.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type_id).order_by(Race.name).all()
     etape = Etape.query.filter_by(id=etape_id).first()
     categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    categorie = Categorie.query.filter_by(categorie_type_id = categorie_type.id,etape_id=etape_id).first()
     club = etape.club
 
-    return render_template("races.html", championnat_id=championnat_id, races=races, categorie_type=categorie_type, etape=etape, club=club)
+    return render_template("races.html", championnat_id=championnat_id, races=races, categorie=categorie,categorie_type=categorie_type, etape=etape, club=club)
 
-@views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/races/classement_etape_pdf",methods=['POST'])
-@login_required
-def genere_classement_pdf(etape_id,championnat_id,categorie_type_id):
-    return("ok")
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/races", methods=['POST'])
 @login_required
 def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
@@ -1230,7 +1228,7 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                 categorie.finale_genere = True
                 db.session.commit()
 
-        return redirect(url_for('views.races', etape_id=etape_id, championnat_id=championnat_id, categorie_type_id=categorie_type_id))
+        return redirect(url_for('views.races', etape_id=etape_id, championnat_id=championnat_id, categorie_type_id=categorie_type_id, categorie=categorie))
 
 
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches")
@@ -1349,14 +1347,61 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
             db.session.commit()
 
         return redirect(url_for('views.manches', championnat_id=championnat_id, etape_id=etape_id, categorie_type_id=categorie_type_id, race_id=race_id))
-@views.route("/supprimer_championnat_<championnat_id>/",methods=['POST','GET'])
+
+@views.route("/championnat-<championnat_id>/etape-<etape_id>/download/",methods=['POST'])
 @login_required
-def supprimer_championnat(championnat_id):
-    #prendre en paramètre lidentifiant du championnat pour supprimer toutes les particiations d'étapess, de races et de manches qui sont liées à ce championnat ainsi que les races et les manches
-    #suppression en cascade
-    Championnat.query.filter_by(id=championnat_id).delete()
-    db.session.commit()
-    return f"championnat {championnat_id} supprimé"
+def generer_pdf_classement_categories(etape_id,championnat_id):
+    liste_categories = Categorie.query.filter_by(etape_id=etape_id).all()
+    liste_classements = []
+    etape = Etape.query.filter_by(id=etape_id).first()
+    for categorie in liste_categories:
+        classement_transforme = get_classement_etape_categorie(etape_id,categorie.categorie_type.id)
+        liste_classements.append(classement_transforme)
+    html = render_template('classement_etape_categories_pdf.html',etape = etape, liste_categories= liste_categories,liste_classements=liste_classements)
+    return render_pdf(HTML(string=html))
+
+@views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/download/",methods=['POST'])
+@login_required
+def generer_pdf_classement_races(etape_id, championnat_id,categorie_type_id):
+    etape = Etape.query.filter_by(id=etape_id).first()
+    categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    classement_transforme = get_classement_etape_categorie(etape_id,categorie_type_id)
+    html = render_template('classement_etape_pdf.html',etape = etape, categorie_type=categorie_type,classement_transforme=classement_transforme)
+    return render_pdf(HTML(string=html))
+
+@views.route("/championnat-<championnat_id>/download/",methods=['POST'])
+@login_required
+def generer_pdf_classement_general(championnat_id):
+    championnat = Championnat.query.filter_by(id=championnat_id).first()
+    liste_etapes = Etape.query.filter_by(championnat_id=championnat_id).all()
+    #chaque entrée de liste_groupes_categories représente une liste de catégories liées à une étape spécifique
+    liste_types_categories = []
+
+    #les clés de ce dictionnaire seront les categorie_type
+    #les valeurs de ce dictionnaire seront d'autres dictionnaires
+    # avec en clé les étapes et en valeur les classements d'étapes/categories
+    # {Categorie1:{etape1:{pilote1:50,pilote2:47 ...},etape2{pilote1:47,pilote2:50 ...}},Categorie2{etape1{},etape2{} ...}} 
+    dictionnaire_general = {}
+    liste_types_categories.append(Categorie_type.query.all())
+    for etape in liste_etapes:
+        for type_categorie in liste_types_categories[0]:
+                classement_etape_categorie = get_classement_etape_categorie(etape.id,type_categorie.id)
+                #ci-dessous, un dictionnaire pour accueillir les différents classements d'étapes liés à un type de catégorie
+                dictionnaire_general[type_categorie] = {}
+                #on ajoute les dictionnaires de classement dans chaque dictionnaire de categorie
+                #oui mais si on fait ça, on perd l'information de la position au classement d'étapes
+                #et un dictionnaire pour accueillir la somme des points pour toutes les étapes
+                dictionnaire_general[type_categorie][etape] = []
+                dictionnaire_general[type_categorie]["general"] = {}
+                for entree_classement in classement_etape_categorie:
+                    #on stocke les scores d'étapes de tous les pilotes liés à une catégorie et à une étape 
+                    dictionnaire_general[type_categorie][etape].append((entree_classement[0],entree_classement[1]))
+                    if entree_classement not in dictionnaire_general[type_categorie]["general"]:
+                        dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
+                    else:
+                        dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
+    #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
+    return render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches/download/",methods=['POST'])
 @login_required
 def download_form_post(etape_id, championnat_id, categorie_type_id, race_id):
@@ -1365,7 +1410,6 @@ def download_form_post(etape_id, championnat_id, categorie_type_id, race_id):
     liste_participants_race = Participant_race.query.filter_by(race_id = race.id)
     #retourne les titulaires pour une race donnée (pas possible de s'appuyer sur une référence directe à l'objet titulaire dans participant_race)
     #je veux tous les titulaires dont l'id est égal à titulaire_id dans liste_participants_race 
-    liste_titulaires_race = Titulaire.query
     etape = Etape.query.filter_by(id=etape_id).first()
     vecteurClassementRace = {}
     #on itère sur tous les participants de la race
@@ -1390,3 +1434,97 @@ def download_form_post(etape_id, championnat_id, categorie_type_id, race_id):
         sorted_classement[i] = vecteurClassementRace[i]
     html = render_template('manchesPDF.html', club=club,championnat_id=championnat_id, etape = etape, categorie_type=categorie_type, race=race,manches=manches, vecteur_classement_race = sorted_classement)
     return render_pdf(HTML(string=html))
+
+def get_classement_etape_categorie(etape_id,categorie_type_id):
+    """Fonction ne renvoyant pas de vue html mais servant à générer les données de classement pour une étape donnée et une catégorie d'age
+    Elle se base sur les places d'arrivées lors des manches de finale ainsi que la lettre de chaque Race
+
+    Args:
+        etape_id (int): id de l'étape
+        categorie_type_id (int): id du type de la catégorie
+
+    Returns:
+        un tuple avec en première valeur l'objet categorie qui concerne ce classement et ensuite en deuxième, une liste ordonnée selon l'ordre du classement contenant les pilotes et le score qui leur est associé pour l'étape passée en paramètre
+
+    """
+    categorie = Categorie.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type_id).first()
+    race_type_finale = Race_type.query.filter_by(type="Finale").first()
+    etape = Etape.query.filter_by(id=etape_id).first()
+    categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    liste_manches = []
+    liste_races = []
+    vecteur_classement_etape = {}
+    classement_transforme = []
+    if categorie is not None:
+        if len(categorie.participations) > 8:
+            liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id, race_type_id=race_type_finale.id).all()
+        else:
+            liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id).all()
+    #cumul des positions en dessous
+        if categorie.participations is not None and categorie.finie:
+            for race in liste_races:
+                liste_manches.append(Manche.query.filter_by(race_id=race.id).all())
+            for groupe_manche in liste_manches:
+                for manche in groupe_manche:
+                    for participation in manche.participations:
+                        if vecteur_classement_etape.get(participation.titulaire_manche):
+                            vecteur_classement_etape[participation.titulaire_manche] += participation.resultat
+                        else:
+                            vecteur_classement_etape[participation.titulaire_manche] = participation.resultat
+            if len(categorie.participations) > 8:
+                #3 manches de qualification pour chaque race, les 6 meilleurs en A pour une finale en 2 manches les 3 autres en B pareil finale en 2 manches
+                max_vecteur_classement = max(vecteur_classement_etape.values())
+                titulaires_finale_B = []
+                for race in liste_races:
+                    if race.name == "B":
+                        for participant_finale_B in race.participations:
+                            titulaires_finale_B.append(participant_finale_B.titulaire_race)
+                for titulaire_finale_B in titulaires_finale_B:
+                    vecteur_classement_etape[titulaire_finale_B] += max_vecteur_classement
+
+                if len(categorie.participations) > 16:
+                    #maj du nouveau max ci-dessous
+                    max_vecteur_classement = max(vecteur_classement_etape.values())
+                    titulaires_finale_C = []
+                    for race in liste_races:
+                        if race.name == "C":
+                            for participant_finale_C in race.participations:
+                                titulaires_finale_C.append(participant_finale_C.titulaire_race)
+                    for titulaire_finale_C in titulaires_finale_C:
+                        vecteur_classement_etape[titulaire_finale_C] += max_vecteur_classement
+                    #maj du nouveau max ci-dessous
+                    max_vecteur_classement = max(vecteur_classement_etape.values())
+
+                if len(categorie.participations) > 24:
+                    titulaires_finale_D = []
+                    for race in liste_races:
+                        if race.name == "D":
+                            for participant_finale_D in race.participations:
+                                titulaires_finale_D.append(participant_finale_D.titulaire_race)
+                    for titulaire_finale_D in titulaires_finale_D:
+                        vecteur_classement_etape[titulaire_finale_D] += max_vecteur_classement
+
+                if len(categorie.participations) > 32:
+                    titulaires_finale_E = []
+                    for race in liste_races:
+                        if race.name == "E":
+                            for participant_finale_E in race.participations:
+                                titulaires_finale_E.append(participant_finale_E.titulaire_race)
+                    for titulaire_finale_E in titulaires_finale_E:
+                        vecteur_classement_etape[titulaire_finale_E] += max_vecteur_classement
+
+            #on retourne une liste triée sur la base de vecteur_classement_étape contenant les pilotes et le score qui leur est associé
+            classement_etape_brut = sorted(
+                vecteur_classement_etape.items(), key=lambda x: x[1])
+            for index_classement in range(len(classement_etape_brut)):
+                if index_classement == 0:
+                    classement_transforme.append(
+                        (classement_etape_brut[index_classement][0], 50))
+                elif index_classement == 1:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 47))
+                elif index_classement == 2:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 45))
+                #on est dans le cas où index_classement >= 3
+                else:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 50-(index_classement+3)))
+    return classement_transforme

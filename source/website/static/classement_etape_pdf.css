@@ -1,0 +1,21 @@
+body, html
+{
+    margin: 0px;
+    padding: 0px;
+}
+table
+{
+    border-collapse: collapse;
+}
+td, th
+{
+    border: 1px solid black;
+    text-align: center;
+}
+@page
+{
+    size:A4;
+    margin-left: 2mm;
+    margin-right: 2mm;
+    margin-top: 2mm;
+}

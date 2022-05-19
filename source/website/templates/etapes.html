@@ -26,6 +26,11 @@
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </div>
 </form>
+<form method="post" action="{{url_for('views.generer_pdf_classement_general',championnat_id=championnat.id)}}">
+    <div class="horizontal-flex">    
+        <button type="submit" class="btn btn-outline-primary">Classement general</button>
+    </div>
+</form>
 {% endblock %}
 
 {% block right_col %}

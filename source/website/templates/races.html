@@ -11,10 +11,10 @@
 <div class="side-bar center-flex h-100 form-group">
     <div class="form-group">
 
-        <form method="post">
+        <form method="post" action="{{url_for('views.generer_pdf_classement_races',championnat_id=championnat_id, etape_id=etape.id, categorie_type_id=categorie_type.id)}}">
             <div class="form-row">
                 <div class="form-group">
-                    <input class="btn btn-outline-primary form-control" type="submit" name="button_classement_PDF" aria-describedby="downloadHelp" value="Afficher_classement_pdf">
+                    <input class="btn btn-outline-primary form-control" type="submit" name="button_classement_PDF" aria-describedby="downloadHelp" value="Afficher classement PDF" {% if not categorie.finie %}disabled{% endif %}>
                 </div>
             </div>
         </form>

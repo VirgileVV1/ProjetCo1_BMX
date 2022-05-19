@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='classement_etape_pdf.css')}}">
+    </head>
+    <body>
+        <h1>Classement général : {{ championnat.championnat_type.type }} {{ championnat.annee }}</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2">plaque</th>
+                    <th rowspan="2">nom - prenom</th>
+                    <th rowspan="2">club</th>
+                    <!-- boucle sur les différentes étapes pour afficher les initiales de club-->
+                    {% for etape in liste_etapes %}
+                        <th colspan="2">{{ etape.club.initiales }}</th>
+                    {% endfor %}
+                    <th rowspan="2" colspan="2">Total Pts et classement</th>
+                </tr>
+                <!-- boucle sur les différentes étapes pour afficher les dates des étapes-->
+                {% for etape in liste_etapes %}
+                    <th>etape.date </th>
+                {% endfor %}
+            <thead>
+            <tbody>
+                <!-- boucle sur les différentes entrées des classement d'étapes et sur celles du classement général -->
+                {% for categorie in classement_general_global %}
+                    {% if categorie is not string %}
+                        <tr>
+                            <th class="categorie_name" scope="col">
+                                {{ categorie.name }}
+                            </th>
+                                
+                            </td>
+                        </tr>
+                    {% endif %}    
+                    {% for pilote in classement_general_global[categorie]['general'] %}                                <tr>
+                                    <td>
+                                        {{ pilote.numero_plaque }}
+                                    </td>
+                                    <td>
+                                        {{ pilote.nom }} - {{ pilote.prenom }}
+                                    </td>
+                                    <td>
+                                        {{ pilote.club.ville }}
+                                    </td>
+                                    {% for entree_classement_etape in classement_general_global[categorie] %}
+                                        {% if entree_classement_etape is not string %}
+                                            {% for pilote_etape in classement_general_global[categorie][entree_classement_etape] %}
+                                            {% if pilote_etape[0] == pilote %}
+                                                <td>
+                                                    {{ pilote_etape[1] }}
+                                                </td>
+                                                <td>
+                                                    pos
+                                                </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td>{{ classement_general_global[categorie]['general'][pilote] }}</td>
+                                    <td>pos</td>
+                                </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>

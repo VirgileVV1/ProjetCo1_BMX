@@ -28,6 +28,11 @@
     <div class="horizontal-flex">
         <button onclick="clicked(event)" type="submit" class="btn btn-outline-primary">Générer</button>
     </div>
+    <div class="horizontal-flex">
+        <form method="post">
+            <button formaction="{{ url_for('views.generer_pdf_classement_categories',championnat_id=championnat_id, etape_id= etape.id) }}" type="submit" class="btn btn-outline-primary">Classement PDF</button>
+        </form>
+    </div>
 </form>
 {% endblock %}
 
