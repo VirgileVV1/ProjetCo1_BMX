@@ -52,7 +52,7 @@
             <td onclick="window.location='{{ url_for('views.etapes', championnat_id=championnat['id'])}}';">{{ championnat['type'] }}</td>
             <td onclick="window.location='{{ url_for('views.etapes', championnat_id=championnat['id'])}}';">{{ championnat['annee'] }}</td>
             <td onclick="window.location='{{ url_for('views.etapes', championnat_id=championnat['id'])}}';">{{ championnat['nb_etapes_courant'] + "/" + championnat['nb_etapes_max'] }}</td>
-            <td class="img"><a href="#" onclick="clicked(event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+            <td class="img"><a href="" onclick="delete_championnat({{ championnat['id'] }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -63,5 +63,32 @@
 {% block logged_js %}
 <script type="text/javascript">
     $('#championnats').addClass('active');
+
+        
+    function delete_championnat(championnat_id, event) {
+        if (clicked(event)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_championnat') }}",
+                    type: "POST",
+                    data: {
+                        "championnat_id": championnat_id,
+                    },
+                    success: function(result){
+                        location.reload();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if(xhr.status == 500) {
+                            alert("Erreur de suppression");
+                        }
+                        location.reload();
+                    }
+                }
+            );
+        }
+    }
+
+
 </script>
 {% endblock %}
+
