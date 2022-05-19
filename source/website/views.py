@@ -1863,7 +1863,8 @@ def generer_pdf_classement_general(championnat_id):
                     else:
                         dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
     #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
-    return render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
+    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
+    return render_pdf(HTML(string=html))
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches/download/",methods=['POST'])
 @login_required
 def download_form_post(etape_id, championnat_id, categorie_type_id, race_id):
