@@ -1845,23 +1845,23 @@ def generer_pdf_classement_general(championnat_id):
     # {Categorie1:{etape1:{pilote1:50,pilote2:47 ...},etape2{pilote1:47,pilote2:50 ...}},Categorie2{etape1{},etape2{} ...}} 
     dictionnaire_general = {}
     liste_types_categories.append(Categorie_type.query.all())
-    for etape in liste_etapes:
-        for type_categorie in liste_types_categories[0]:
-                classement_etape_categorie = get_classement_etape_categorie(etape.id,type_categorie.id)
-                #ci-dessous, un dictionnaire pour accueillir les différents classements d'étapes liés à un type de catégorie
-                dictionnaire_general[type_categorie] = {}
-                #on ajoute les dictionnaires de classement dans chaque dictionnaire de categorie
-                #oui mais si on fait ça, on perd l'information de la position au classement d'étapes
-                #et un dictionnaire pour accueillir la somme des points pour toutes les étapes
-                dictionnaire_general[type_categorie][etape] = []
-                dictionnaire_general[type_categorie]["general"] = {}
-                for entree_classement in classement_etape_categorie:
-                    #on stocke les scores d'étapes de tous les pilotes liés à une catégorie et à une étape 
-                    dictionnaire_general[type_categorie][etape].append((entree_classement[0],entree_classement[1]))
-                    if entree_classement not in dictionnaire_general[type_categorie]["general"]:
-                        dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
-                    else:
-                        dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
+    for type_categorie in liste_types_categories[0]:
+        dictionnaire_general[type_categorie] = {}
+        dictionnaire_general[type_categorie]["general"] = {}
+        for etape in liste_etapes:
+            classement_etape_categorie = get_classement_etape_categorie(etape.id,type_categorie.id)
+            #ci-dessous, un dictionnaire pour accueillir les différents classements d'étapes liés à un type de catégorie
+            #on ajoute les dictionnaires de classement dans chaque dictionnaire de categorie
+            #et un dictionnaire pour accueillir la somme des points pour toutes les étapes d'une catégorie
+            
+            dictionnaire_general[type_categorie][etape] = []
+            for entree_classement in classement_etape_categorie:
+                #on stocke les scores d'étapes de tous les pilotes liés à une catégorie et à une étape 
+                dictionnaire_general[type_categorie][etape].append((entree_classement[0],entree_classement[1]))
+                if entree_classement[0] not in dictionnaire_general[type_categorie]["general"]:
+                    dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
+                else:
+                    dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
     #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
     html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
     return render_pdf(HTML(string=html))
