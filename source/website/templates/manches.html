@@ -57,6 +57,7 @@
   <input type="hidden" name="manche_id" value="{{ manche.id }}">
   <div class="button">
     <input type="submit" class="btn btn-outline-primary" name="" value="Valider Manche">
+    <button class="btn btn-outline-primary">lazy button</button>
   </div>
 </form>
 {% endfor %}
@@ -66,5 +67,35 @@
 {% block custom_js %}
 <script type="text/javascript">
     $('#championnats').addClass('active');
+
+    let lazy_button_list = document.getElementsByTagName("button");
+    for(let bt of lazy_button_list)
+    {
+        bt.addEventListener('click',faster_select_assignation);
+
+    }
+    function faster_select_assignation(e)
+        {
+            let select_list = document.getElementsByTagName("select");
+            let list_available_choices = [];
+            
+            for(let select_element of select_list)
+            {
+                for(let option of select_element.options)
+                {
+                    if(option.value =="none")
+                    {
+                        option.remove();
+                    }
+                }
+                for(let choice of select_list[0].options)
+                {
+                    list_available_choices.push(choice.innerText);
+                }
+                select_element.value = list_available_choices[0];
+                list_available_choices.shift();
+            }
+            return select_list;
+        }
 </script>
 {% endblock %}

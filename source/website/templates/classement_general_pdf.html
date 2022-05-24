@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Classement général</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='classement_etape_pdf.css')}}">
     </head>
     <body>
@@ -18,20 +19,20 @@
                     <th rowspan="2" colspan="2">Total Pts et classement</th>
                 </tr>
                 <!-- boucle sur les différentes étapes pour afficher les dates des étapes-->
-                {% for etape in liste_etapes %}
+                <tr>
+                    {% for etape in liste_etapes %}
                     <th colspan="2">etape.date </th>
-                {% endfor %}
-            <thead>
+                    {% endfor %}
+                </tr>
+            </thead>
             <tbody>
                 <!-- boucle sur les différentes entrées des classement d'étapes et sur celles du classement général -->
                 {% for categorie in classement_general_global %}
                     {% if categorie is not string %}
                         <tr>
-                            <th class="categorie_name" scope="col">
+                            <th class="categorie_name" scope="col" colspan="{{ 5 + liste_etapes|length *2 }}">
                                 {{ categorie.name }}
                             </th>
-                                
-                            </td>
                         </tr>
                     {% endif %}    
                     {% for pilote in classement_general_global[categorie]['general'] %}                                <tr>
@@ -52,14 +53,14 @@
                                                     {{ pilote_etape[1] }}
                                                 </td>
                                                 <td>
-                                                    pos
+                                                    {{ loop.index }}
                                                 </td>
                                                 {% endif %}
                                             {% endfor %}
                                         {% endif %}
                                     {% endfor %}
                                     <td>{{ classement_general_global[categorie]['general'][pilote] }}</td>
-                                    <td>pos</td>
+                                    <td>{{ loop.index }}</td>
                                 </tr>
                     {% endfor %}
                 {% endfor %}
