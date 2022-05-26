@@ -18,6 +18,9 @@
                 </div>
             </div>
         </form>
+
+
+        {%if etape.championnat.championnat_type.type == "Régional"%}
         <form method="post">
             <div class="form-row">
                 <div class="form-group">
@@ -28,6 +31,9 @@
                 </div>
             </div>
         </form>
+        {%endif%}
+
+
     </div>  
 </div>
 {% endblock %}

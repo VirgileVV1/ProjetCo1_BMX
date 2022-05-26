@@ -17,4 +17,6 @@ def handle_exception(e):
     return render_template("500.html"), 500"""
 
 if __name__ == "__main__" :
+    webbrowser.open_new("http://127.0.0.1:5000")
     app.run(debug=False)
+    
