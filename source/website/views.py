@@ -2191,7 +2191,7 @@ def get_classement_etape_categorie(etape_id,categorie_type_id):
     vecteur_classement_etape = {}
     classement_transforme = []
     if categorie is not None:
-        if len(categorie.participations) > 8:
+        if len(categorie.participations) > 8 and etape.championnat.championnat_type.type != "Départemental":
             liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id, race_type_id=race_type_finale.id).all()
         else:
             liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id).all()
