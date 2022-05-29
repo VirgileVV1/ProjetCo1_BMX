@@ -29,9 +29,9 @@
 {% endblock %}
 {% block custom_js %}
 <script>
-function clicked(e,idChampionnat)
+function clicked(e, nom)
 {
-    if(!confirm('Êtes-vous sûr de supprimer '+idChampionnat+' ?')) {
+    if(!confirm('Êtes-vous sûr de supprimer '+ nom +' ?')) {
         e.preventDefault();
         return false;
     }

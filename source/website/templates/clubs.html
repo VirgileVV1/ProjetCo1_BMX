@@ -7,6 +7,34 @@
 >
 {% endblock %}
 
+
+{% block edit_form %}
+<div id="edit_form">
+    <div id="container-form">
+        <div class="title horizontal-flex mg">
+            <h3>Modifier le titulaire</h3>
+        </div>
+
+        <div class="mg">
+            <label for="club_name" class="form-label">Nom</label>
+            <input type="text" id="club_name" name="club_name" class="form-control {% if club_name %}is-invalid{% endif %}">
+        </div>
+
+        <div class="mg">
+            <label for="club_init" class="form-label">Initiale(s)</label>
+            <input type="text" id="club_init" name="club_init" class="form-control {% if club_init %}is-invalid{% endif %}">
+        </div>
+
+        <div id="container-btns">
+            <button class="btn btn-outline-danger" id="btn-cancel" onclick="hideEditForm(event)"> Annuler </button>
+            <button type="submit" class="btn btn-outline-primary" onclick="editClub()" id="btn-ok"> Confirmer </button>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
 {% block left_col %}
 <form class="" method="post">
     <div class="title horizontal-flex mb-4">
@@ -38,15 +66,20 @@
             <th scope="col">Nom club</th>
             <th scope="col">Initiale(s)</th>
             <th scope="col">Nombres de titulaires</th>
+
+            <th scope="col"></th>
+            <th scope="col"></th>
         </tr>
     </thead>
     <tbody>
         {% for club in clubs %}
-        <tr onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';">
+        <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td>{{ club.ville[0]|upper + club.ville[1:] }}</td>
-            <td>{{ club.initiales }}</td>
-            <td>{{ club.titulaires|length }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';">{{ club.ville[0]|upper + club.ville[1:] }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';"> {{ club.initiales }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';" >{{ club.titulaires|length }}</td>
+            <td class="img"><img src="{{ url_for('static', filename='edit.png') }}" onclick="showEditForm(event, {{club.id}}, '{{ (club.ville[0]|upper + club.ville[1:]) }}', '{{ club.initiales }}')"  alt="Modifier"></td>
+            <td class="img"><img src="{{ url_for('static', filename='delete.svg') }}" onclick="deleteClub(event, {{club.id}}, '{{ club.ville[0]|upper + club.ville[1:] }}')" alt="Supprimer"></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -54,8 +87,67 @@
 {% endblock %}
 
 
-{% block custom_js %}
+
+{% block logged_js %}
 <script type="text/javascript">
     $('#clubs').addClass('active');
+
+    var CLUB_ID = -1
+
+    function showEditForm(e, club_id, club_name, club_init) {
+
+        e.preventDefault();  // cette methode empeche le rechargement de la page
+        CLUB_ID = club_id
+
+        document.getElementById('club_name').value = club_name;
+        document.getElementById('club_init').value = club_init;
+        // on fait apparaitre le formulaire d'edition
+        document.getElementById('edit_form').style.display = "flex";
+
+    }
+
+
+    function hideEditForm(e) {
+        e.preventDefault();
+        document.getElementById('edit_form').style.display = "none";
+    }
+
+
+    function editClub() {
+        club_name = document.getElementById('club_name').value;
+        club_init = document.getElementById('club_init').value;
+        $.ajax(
+        {
+            url: "/clubs/"+CLUB_ID,
+            type: "POST",
+            data: {
+                "club_name": club_name,
+                "club_init": club_init
+            },
+            success: function(result){
+                location.reload();
+            }
+        })
+    }
+
+    function deleteClub(e, club_id, club_ville) {
+        e.preventDefault();
+        if (clicked(event, club_ville)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_club') }}",
+                    type: "POST",
+                    data: {
+                        "club_id": club_id,
+                    },
+                    success: function(result){
+                        alert(result.message)
+                        location.reload();
+                    }
+                }
+            );
+        }
+    }
+
 </script>
 {% endblock %}

@@ -7,6 +7,7 @@
 >
 {% endblock %}
 
+
 {% block edit_form %}
 <div id="edit_form">
     <div id="container-form">
@@ -19,11 +20,11 @@
             </div>
             <div class="form-floating mg">
                 <input type="text" class="form-control {% if name %}is-invalid{% endif %}" id="edited-name" name="name">
-                <label for="name">Nom</label>
+                <label for="edited-name">Nom</label>
             </div>
             <div class="form-floating mg">
                 <input type="text" class="form-control {% if surname %}is-invalid{% endif %}" id="edited-surname" name="surname">
-                <label for="surname" class="form-label">Prénom</label>
+                <label for="edited-surname" class="form-label">Prénom</label>
             </div>
             <div class="form-floating mg">
                 <input type="date" class="form-control {% if birthDate %}is-invalid{% endif %}" id="edited-birthDate" name="birthDate">
@@ -57,9 +58,9 @@
                 <button type="submit" class="btn btn-outline-primary" id="btn-ok"> Confirmer </button>
             </div>
         </form>
-        
 
-      
+
+
 
     </div>
 
@@ -163,7 +164,7 @@
             <td contenteditable="false">{{ titulaire.club }}</td>
             <td contenteditable="false">{{ titulaire.plaque }}</td>
             <td class="img"><a class="p{{loop.index}}" onclick="showEditForm(event, {{ titulaire }})"><img src="{{ url_for('static', filename='edit.png') }}" alt="Modifier"></a></td>
-            <td class="img"><a onclick="delete_titulaire({{ titulaire.id }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+            <td class="img"><a onclick="delete_titulaire(event, {{ titulaire.id }}, '{{ titulaire.nom }}', '{{ titulaire.prenom }}')"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
 
         </tr>
         {% endfor %}
@@ -215,8 +216,9 @@
         document.getElementById('edit_form').style.display = "none";
     }
 
-    function delete_titulaire(titulaire_id, event) {
-        if (clicked(event)) {
+    function delete_titulaire(event, titulaire_id, titulaire_nom, titulaire_prenom) {
+        nomEntier =  titulaire_nom + " "+ titulaire_prenom
+        if (clicked(event, nomEntier)) {
             $.ajax(
                 {
                     url: "{{ url_for('views.delete_titulaire') }}",
@@ -225,11 +227,12 @@
                         "titulaire_id": titulaire_id,
                     },
                     success: function(result){
+                        alert(result.message)
                         location.reload();
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
                         if(xhr.status == 500) {
-                            alert("Vous ne pouvez pas supprimer un titulaire qui a un championnat en cours");
+                            alert("Erreur serveur");
                         }
                         location.reload();
                     }

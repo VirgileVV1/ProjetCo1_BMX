@@ -1,4 +1,5 @@
 from cmath import log
+from hmac import new
 from operator import index, indexOf
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
@@ -249,7 +250,7 @@ def add_titulaire() :
         if (t.numero_plaque == plaque) :
             PlaqueExist += 1
 
-    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=100 or len(plaque)>3:
+    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=1000 or len(plaque)>4:
         new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
@@ -427,8 +428,8 @@ def edit_titulaire() :
             prenom = prenom[0].upper() + prenom[1:].lower()
             sexe_id = request.form.get('sexeId')
             plaque = request.form.get('plaqueNb')
-            if len(plaque) >= 4:
-                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 3 caracteres (1 lettre + 2 chiffres)
+            if len(plaque) > 4:
+                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
             # si la plaque ne fait que 2 caractere, cela veut dire que le numero est < 10 donc on rajoute un 0 devant pour que ce soit plus joli
             elif (len( plaque) == 2):
                 plaque = plaque[0].upper()+"0" + plaque[1]
@@ -489,9 +490,11 @@ def delete_titulaire() :
             db.session.delete(titulaire)
             db.session.commit()
 
-            return jsonify({'status': 'ok'})
+            return jsonify({'status': 'ok',
+                            'message': 'Le titulaire a été supprimé avec succès'})
         else :
-            return jsonify({'status': 'error'})
+            return jsonify({'status': 'error',
+                            'message': 'Titulaire inexistant dans la base de données'})
         
 @views.route("/championnats/delete", methods=['POST'])
 @login_required
@@ -555,6 +558,67 @@ def clubs() :
 
     return render_template("clubs.html", clubs=clubs)
 
+
+@views.route("/clubs/<club_id>", methods=['POST'])
+@login_required
+def edit_club(club_id):
+    """Fonction liée au end-point "/clubs/<club_id> en method POST"
+
+    Fonction modifiant un club.
+
+    Returns:
+        Redirect : redirection vers views.club
+
+    """
+    new_club_name = request.form.get('club_name')
+    new_club_init = request.form.get('club_init')
+
+    if club_id is not None :
+        club = Club.query.filter_by(id=club_id).first()
+        if club is not None :
+            club.ville = new_club_name
+
+            if (club.initiales != new_club_init):
+
+                titulaires_from_club = Titulaire.query.all()
+                old_club_init = club.initiales
+                club.initiales = new_club_init
+
+                for i in range( len(titulaires_from_club)):
+                    if titulaires_from_club[i].numero_plaque[0] == old_club_init:
+                        titulaires_from_club[i].numero_plaque = new_club_init + titulaires_from_club[i].numero_plaque[1:]
+
+            db.session.commit()
+
+    # Rechargement des donnees
+    return redirect(url_for('views.clubs'))
+
+@views.route("/clubs/delete", methods=['POST'])
+@login_required
+def delete_club():
+    """Fonction liée au end-point "/clubs/delete en method POST"
+
+    Fonction supprimant une etape, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    club_id = request.form.get('club_id')
+    if club_id is not None :
+        club = Club.query.filter_by(id=club_id).first()
+        if club is not None:
+            db.session.delete(club)
+            db.session.commit()
+
+            return jsonify({'status': 'ok',
+                            'message': 'Le club a été supprimé avec succès'})
+        else :
+            return jsonify({'status': 'error',
+                            'message': 'Club non trouvé'})
+    return jsonify({'status': 'error',
+                    'message': 'Id non trouvé'})
 
 @views.route("/clubs/", methods=['POST'])
 @login_required
