@@ -241,8 +241,14 @@ def add_titulaire() :
         return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, clubId=True)
 
     plaque = request.form.get('plaqueNb')
-    plaque = plaque[0].upper() + plaque[1:]
-    numero = plaque[1:] # on extrait le numero de la plaque
+    #si la plaque contient la lettre on l'ajoute
+    if plaque[0].isnumeric():
+        numero = plaque
+        plaque = (Club.query.filter_by(id=club_id).first()).initiales+numero
+    #sinon
+    else:
+        plaque = plaque[0].upper() + plaque[1:]
+        numero = plaque[1:] # on extrait le numero de la plaque
     # on verifie ensuite que la plaque n'existe pas déjà
     titulaires = Titulaire.query.all()
     PlaqueExist = 0
@@ -427,21 +433,37 @@ def edit_titulaire() :
             prenom = request.form.get('surname')
             prenom = prenom[0].upper() + prenom[1:].lower()
             sexe_id = request.form.get('sexeId')
+
+            club_name = request.form.get('clubId')
+            clubs = Club.query.all()
+            for i in range(len(clubs)):
+                if (club_name.lower() == clubs[i].ville.lower()):
+                    club_id = clubs[i].id
+
             plaque = request.form.get('plaqueNb')
             if len(plaque) > 4:
                 return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
+
+            # on verifie si l'utilisateur a entré la lettre avec le numero de la plaque
+            if (plaque[0].isnumeric()):
+                if len(plaque) > 3:
+                    return jsonify({'status': 'error'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
+                club = Club.query.filter_by(id=club_id).first()
+                plaque = club.initiales + plaque
+
+
             # si la plaque ne fait que 2 caractere, cela veut dire que le numero est < 10 donc on rajoute un 0 devant pour que ce soit plus joli
-            elif (len( plaque) == 2):
+            if (len( plaque) == 2):
                 plaque = plaque[0].upper()+"0" + plaque[1]
             else:
                 plaque = plaque[0].upper() + plaque[1:]
+
 
             # on verifie ensuite que la plaque n'existe pas déjà
             titulaires = Titulaire.query.all()
             PlaqueExist = 0
             for t in titulaires:
                 if (t.numero_plaque == plaque) and (int(t.id) != int(titulaire_id)):
-                    print("oui")
                     PlaqueExist += 1
 
             if (PlaqueExist >= 1):
@@ -450,11 +472,7 @@ def edit_titulaire() :
             str_date = request.form.get('birthDate').split('-')
             date = datetime.datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
             titulaire.date_naissance = date
-            club_name = request.form.get('clubId')
-            clubs = Club.query.all()
-            for i in range(len(clubs)):
-                if (club_name.lower() == clubs[i].ville.lower()):
-                    club_id = clubs[i].id
+
             #titulaire.club_id = club_id
 
             titulaire.nom = nom
@@ -572,6 +590,7 @@ def edit_club(club_id):
     """
     new_club_name = request.form.get('club_name')
     new_club_init = request.form.get('club_init')
+    new_club_init = new_club_init.upper()
 
     if club_id is not None :
         club = Club.query.filter_by(id=club_id).first()

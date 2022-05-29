@@ -28,10 +28,10 @@
             </div>
             <div class="form-floating mg">
                 <input type="date" class="form-control {% if birthDate %}is-invalid{% endif %}" id="edited-birthDate" name="birthDate">
-                <label for="birthDate" class="form-label">Date De Naissance</label>
+                <label for="edited-birthDate" class="form-label">Date De Naissance</label>
             </div>
             <div class="mg">
-                <label for="club" class="form-label">Club</label>
+                <label for="edited-club" class="form-label">Club</label>
                 <select id="edited-club" name="clubId" class="form-select {% if clubId %}is-invalid{% endif %}">
                     <option value="none" selected>Choisir un club</option>
                     {% for club in clubs %}
@@ -40,11 +40,13 @@
                 </select>
             </div>
             <div class="form-floating mg">
-                <input type="text" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="edited-plaqueNb" name="plaqueNb">
-                <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
+                <input type="text" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="edited-plaqueNb" name="plaqueNb"
+                >
+                <label for="edited-plaqueNb" class="form-label">Numéro De Plaque</label>
             </div>
+
             <div class="mb-4">
-                <label for="sexe" class="form-label">Sexe</label>
+                <label for="edited-sexe" class="form-label">Sexe</label>
                 <select id="edited-sexe" name="sexeId" class="form-select {% if sexeId %}is-invalid{% endif %}">
                     <option value="none" selected>Choisir un sexe</option>
                     {% for sexe in sexes %}
