@@ -23,7 +23,7 @@
     </div>
     <div class="horizontal-flex">
         <input type="hidden" name="championnatId" value="{{ championnat.id }}">
-        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+        <button style="margin-bottom: 12px;" type="submit" class="btn btn-outline-primary">Ajouter</button>
     </div>
 </form>
 <form method="post" action="{{url_for('views.generer_pdf_classement_general',championnat_id=championnat.id)}}">
@@ -46,6 +46,7 @@
             <th scope="col">#</th>
             <th scope="col">Club Organisateur</th>
             <th scope="col">Participants</th>
+            <th> <!-- pour l'image --> </th>
         </tr>
     </thead>
     <tbody>
