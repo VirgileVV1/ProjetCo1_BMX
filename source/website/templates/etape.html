@@ -21,12 +21,16 @@
         {% endfor %}
     </div>
     <div class="horizontal-flex">
-       <button onclick="select(event)" type="submit" class="btn btn-outline-primary">Tout sélectionner</button>
+       <button style="margin-bottom: 12px;" onclick="select(event)" type="submit" class="btn btn-outline-primary">Tout sélectionner</button>
     </div>
 
-    <br>
     <div class="horizontal-flex">
-        <button onclick="clicked(event)" type="submit" class="btn btn-outline-primary">Générer</button>
+        <button style="margin-bottom: 12px;" onclick="clicked(event)" type="submit" class="btn btn-outline-primary">Générer</button>
+    </div>
+    <div class="horizontal-flex">
+        <form method="post">
+            <button formaction="{{ url_for('views.generer_pdf_classement_categories',championnat_id=championnat_id, etape_id= etape.id) }}" type="submit" class="btn btn-outline-primary">Classement PDF</button>
+        </form>
     </div>
 </form>
 {% endblock %}
@@ -93,5 +97,70 @@
         }
     }
     $('#championnats').addClass('active');
+</script>
+<script>
+    /*
+    ce script permet de faire une sélection/déselection de plusieurs pilotes par l'appui simultané de la touche shift + clic
+    */
+    let liste_checkbox = document.getElementsByClassName("form-check-input");
+    let last_selected;
+    
+    for(let chk of liste_checkbox)
+    {
+        chk.checked = false;
+        chk.addEventListener('click',set_last_checkbox_selected);
+        chk.addEventListener('click',select_multiple_checkbox_shift);
+    }
+
+    function set_last_checkbox_selected(e)
+    {
+        if(!e.shiftKey)
+        {
+            last_selected = e.srcElement;
+        }
+    }
+    
+    function select_multiple_checkbox_shift(e)
+        {
+            if(e.shiftKey)
+            {
+                let declencheur = e.srcElement;
+                if(declencheur.checked != last_selected.checked)
+                {
+                    last_selected.checked = declencheur.checked;
+                }
+                let last_selected_depasse = false;
+                let declencheur_depasse = false;
+                for(let chk of liste_checkbox)
+                {
+                    //plusieurs cas à gérer
+                    //si premier clic en haut et shift+clic ensuite un peu plus bas dans la liste, classique
+                    //si shift + clic depassé mais pas premier_clic, cas du haut vers le bas
+                    if(chk == last_selected)
+                    {
+                        last_selected_depasse = true;
+                        last_selected_depasse.checked = !last_selected.checked;
+                        if(declencheur_depasse == true)
+                        {
+                            last_selected = declencheur;
+                            return;
+                        }
+                    }
+                    if(chk == declencheur)
+                    {
+                        declencheur_depasse = true;
+                        if(last_selected_depasse == true)
+                        {
+                            last_selected = chk;
+                            return;
+                        }
+                    }
+                    if((last_selected_depasse != declencheur_depasse) && chk != declencheur && chk != last_selected)
+                    {
+                        chk.checked = declencheur.checked;
+                    }
+                }
+            }
+        }
 </script>
 {% endblock %}

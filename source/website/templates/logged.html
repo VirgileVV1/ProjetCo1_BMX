@@ -29,12 +29,13 @@
 {% endblock %}
 {% block custom_js %}
 <script>
-function clicked(e)
+function clicked(e, nom)
 {
-    if(!confirm('Êtes-vous sûr ?')) {
+    if(!confirm('Êtes-vous sûr de supprimer '+ nom +' ?')) {
         e.preventDefault();
         return false;
     }
+
     return true;
 }
 </script>

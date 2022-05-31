@@ -1,4 +1,6 @@
-from tkinter.tix import INTEGER
+from cmath import log
+from hmac import new
+from operator import index, indexOf
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
 import sqlalchemy
@@ -9,6 +11,11 @@ import numpy as np
 import os
 
 import xlrd
+import os
+if os.name == "nt":
+    os.environ['PATH'] = r"C:\Program Files\GTK3-Runtime Win64\bin" + os.pathsep + os.environ['PATH']
+import weasyprint
+from flask_weasyprint import HTML, render_pdf
 
 from .__init__ import db
 from .models import User, Titulaire, Club, Sexe, Championnat, Championnat_type, Etape, Categorie_type, Participant_etape, Race_type, Couloir, Race, Participant_race, Manche, Participant_manche, Categorie, Participant_categorie
@@ -16,7 +23,7 @@ from .models import User, Titulaire, Club, Sexe, Championnat, Championnat_type, 
 views = Blueprint("views", __name__)
 
 
-def get_titulaires_dict(titulaires) :
+def get_titulaires_dict(titulaires):
     """Fonction de création d'un dictionnaire de titulaires
 
     Certaines fonction nécessite une structure de données particulière, cette fonction la créée.
@@ -40,8 +47,10 @@ def get_titulaires_dict(titulaires) :
             "date_naissance": titulaire.date_naissance.strftime("%d/%m/%Y"),
             "club": club.ville[0].upper() + club.ville[1:],
             "sexe": sexe.denomination,
-            "plaque": club.initiales.upper() + " " + str(titulaire.numero_plaque),
+            "plaque": str(titulaire.numero_plaque),
         })
+
+        # ancienne facon d'avoir la plaque :  "plaque": club.initiales.upper() + " " + str(titulaire.numero_plaque),
 
     return to_return
 
@@ -117,6 +126,7 @@ def calcul_points_race(races) :
     Fonction qui calcul les points en fonction de l'orde d'arrivé des pilotes à une manche
 
     Returns:
+        non ne retourne rien mais modifie l'attribut resultat d'un participant à une race en faisant le cumul de ces points lors des différentes manches de la race 
         Dict: dictionnaire ordonné par ordre croissant des points reçus aux races d'une manche
 
     """
@@ -201,53 +211,69 @@ def add_titulaire() :
 
     """
 
-    nom = request.form.get('name')
-    if nom is None or nom == "" :
-        titulaires = Titulaire.query.all()
+    nom = request.form.get('name').upper() # On met le nom de famille en majuscule
+    if nom is None or nom == "":
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, name=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, name=True)
 
-    prenom = request.form.get('surname')
+    # On met le prenom en minscule sauf la premiere lettre
+    prenom = request.form.get('surname').lower()
+    prenom = prenom[0].upper() + prenom[1:]
     if prenom is None or prenom == "" :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, surname=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, surname=True)
 
     date_naissance = request.form.get('birthDate')
     if date_naissance is None or date_naissance == "" or len(date_naissance.split("-")) != 3 or len(date_naissance.split("-")[2]) <= 0 or len(date_naissance.split("-")[2]) > 2 or len(date_naissance.split("-")[1]) <= 0 or len(date_naissance.split("-")[1]) > 2 or len(date_naissance.split("-")[0]) < 4:
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, birthDate=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, birthDate=True)
 
     club_id = request.form.get('clubId')
     if club_id is None or club_id == "" or Club.query.filter_by(id=club_id).first() is None :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, clubId=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, clubId=True)
 
-    numero_plaque = request.form.get('plaqueNb')
-    if numero_plaque is None or numero_plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, numero_plaque) is not None or int(numero_plaque)>=100 :
-        titulaires = Titulaire.query.all()
+    plaque = request.form.get('plaqueNb')
+    #si la plaque contient la lettre on l'ajoute
+    if plaque[0].isnumeric():
+        numero = plaque
+        plaque = (Club.query.filter_by(id=club_id).first()).initiales+numero
+    #sinon
+    else:
+        plaque = plaque[0].upper() + plaque[1:]
+        numero = plaque[1:] # on extrait le numero de la plaque
+    # on verifie ensuite que la plaque n'existe pas déjà
+    titulaires = Titulaire.query.all()
+    PlaqueExist = 0
+    for t in titulaires:
+        if (t.numero_plaque == plaque) :
+            PlaqueExist += 1
+
+    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=1000 or len(plaque)>4:
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, plaqueNb=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, plaqueNb=True)
 
     sexe_id = request.form.get('sexeId')
     if sexe_id is None or sexe_id == "" or Sexe.query.filter_by(id=sexe_id).first() is None :
-        titulaires = Titulaire.query.all()
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
         clubs = Club.query.all()
         sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes, sexeId=True)
+        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, sexeId=True)
 
-    date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
-    if len(numero_plaque) < 2 :
-        numero_plaque = "0" + numero_plaque
-
-    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=numero_plaque, sexe_id=sexe_id)
+    date_naissance = datetime.datetime.strptime(date_naissance, '%Y-%m-%d')
+    if len(plaque) == 2 :
+        plaque = plaque[0] + "0" + plaque[1]
+    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=plaque, sexe_id=sexe_id)
     db.session.add(new_titulaire)
     db.session.commit()
 
@@ -384,6 +410,11 @@ def add_titulaires() :
 
     return redirect(url_for('views.titulaires'))
 
+"""
+/!\ TODO : l'id doit etre passé en parametre de l'url et de la fonction normalement
+et la route doit etre : /titulaires/<titulaire_id> et la fonction : edit_titulaire(titulaire_id):
+mais j'ai un pb dans l'html je n'arrive pas a passer le bon id en parametre
+"""
 @views.route("/titulaires/edit", methods=['POST'])
 @login_required
 def edit_titulaire() :
@@ -401,39 +432,65 @@ def edit_titulaire() :
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
 
         if titulaire is not None:
-            titulaire.nom = request.form.get('name')
-            titulaire.prenom = request.form.get('surname')
-            titulaire.sexe_id = request.form.get('sexeId')
-            numero_plaque = request.form.get('plaqueNb')
-            #print(len(request.form.get('plaqueNb')))
-            titulaire.numero_plaque = numero_plaque
-            if (len( request.form.get('plaqueNb')) == 1):
-                titulaire.numero_plaque = "0" + numero_plaque
-            str_date = request.form.get('birthDate').split('-')
-            date = datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
-            titulaire.date_naissance = date
+            nom = request.form.get('name').upper()
+            prenom = request.form.get('surname')
+            prenom = prenom[0].upper() + prenom[1:].lower()
+            sexe_id = request.form.get('sexeId')
+
             club_name = request.form.get('clubId')
             clubs = Club.query.all()
             for i in range(len(clubs)):
                 if (club_name.lower() == clubs[i].ville.lower()):
                     club_id = clubs[i].id
-            titulaire.club_id = club_id
 
+            plaque = request.form.get('plaqueNb')
+            if len(plaque) > 4:
+                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
+
+            # on verifie si l'utilisateur a entré la lettre avec le numero de la plaque
+            if (plaque[0].isnumeric()):
+                if len(plaque) > 3:
+                    return jsonify({'status': 'error'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
+                club = Club.query.filter_by(id=club_id).first()
+                plaque = club.initiales + plaque
+
+
+            # si la plaque ne fait que 2 caractere, cela veut dire que le numero est < 10 donc on rajoute un 0 devant pour que ce soit plus joli
+            if (len( plaque) == 2):
+                plaque = plaque[0].upper()+"0" + plaque[1]
+            else:
+                plaque = plaque[0].upper() + plaque[1:]
+
+
+            # on verifie ensuite que la plaque n'existe pas déjà
+            titulaires = Titulaire.query.all()
+            PlaqueExist = 0
+            for t in titulaires:
+                if (t.numero_plaque == plaque) and (int(t.id) != int(titulaire_id)):
+                    PlaqueExist += 1
+
+            if (PlaqueExist >= 1):
+                return jsonify({'status': 'errorr'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
+
+            str_date = request.form.get('birthDate').split('-')
+            date = datetime.datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
+            titulaire.date_naissance = date
+
+            #titulaire.club_id = club_id
+
+            titulaire.nom = nom
+            titulaire.prenom = prenom
+            titulaire.sexe_id = sexe_id
+            titulaire.numero_plaque = plaque
+            titulaire.club_id = club_id
             db.session.commit()
 
-            #return redirect('/titulaires')
-            # Récupération des données nécessaires à l'affichage de la page
-            new_titulaires = get_titulaires_dict(Titulaire.query.all())
-            clubs = Club.query.all()
-            sexes = Sexe.query.all()
-
-            # Retour de la page populer des valeurs passées en argument
-            print(new_titulaires)
-            return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes)
+            # Rechargement des donnees
+            return redirect(url_for('views.titulaires'))
 
         else:
-            return jsonify({'status': 'error'})
-    return jsonify({'status': 'error'})
+            return jsonify({'status': 'error'}) # le titulaire n\'a pas été trouvé dans la base de données'})
+    return jsonify({'status': 'error'}) # pas d'id trouve dans les parametres
 
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
@@ -452,6 +509,54 @@ def delete_titulaire() :
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
         if titulaire is not None :
             db.session.delete(titulaire)
+            db.session.commit()
+
+            return jsonify({'status': 'ok',
+                            'message': 'Le titulaire a été supprimé avec succès'})
+        else :
+            return jsonify({'status': 'error',
+                            'message': 'Titulaire inexistant dans la base de données'})
+        
+@views.route("/championnats/delete", methods=['POST'])
+@login_required
+def delete_championnat() :
+    """Fonction liée au end-point "/championnats/delete en method POST"
+
+    Fonction supprimant un championnat, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    championnat_id = request.form.get('championnat_id')
+    if championnat_id is not None :
+        championnat = Championnat.query.filter_by(id=championnat_id).first()
+        if championnat is not None :
+            db.session.delete(championnat)
+            db.session.commit()
+
+            return jsonify({'status': 'ok'})
+        else :
+            return jsonify({'status': 'error'})
+        
+@views.route("/etapes/delete", methods=['POST'])
+@login_required
+def delete_etape() :
+    """Fonction liée au end-point "/etapes/delete en method POST"
+
+    Fonction supprimant une etape, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    etape_id = request.form.get('etape_id')
+    if etape_id is not None :
+        etape = Etape.query.filter_by(id=etape_id).first()
+        if etape is not None :
+            db.session.delete(etape)
             db.session.commit()
 
             return jsonify({'status': 'ok'})
@@ -474,6 +579,68 @@ def clubs() :
 
     return render_template("clubs.html", clubs=clubs)
 
+
+@views.route("/clubs/<club_id>", methods=['POST'])
+@login_required
+def edit_club(club_id):
+    """Fonction liée au end-point "/clubs/<club_id> en method POST"
+
+    Fonction modifiant un club.
+
+    Returns:
+        Redirect : redirection vers views.club
+
+    """
+    new_club_name = request.form.get('club_name')
+    new_club_init = request.form.get('club_init')
+    new_club_init = new_club_init.upper()
+
+    if club_id is not None :
+        club = Club.query.filter_by(id=club_id).first()
+        if club is not None :
+            club.ville = new_club_name
+
+            if (club.initiales != new_club_init):
+
+                titulaires_from_club = Titulaire.query.all()
+                old_club_init = club.initiales
+                club.initiales = new_club_init
+
+                for i in range( len(titulaires_from_club)):
+                    if titulaires_from_club[i].numero_plaque[0] == old_club_init:
+                        titulaires_from_club[i].numero_plaque = new_club_init + titulaires_from_club[i].numero_plaque[1:]
+
+            db.session.commit()
+
+    # Rechargement des donnees
+    return redirect(url_for('views.clubs'))
+
+@views.route("/clubs/delete", methods=['POST'])
+@login_required
+def delete_club():
+    """Fonction liée au end-point "/clubs/delete en method POST"
+
+    Fonction supprimant une etape, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    club_id = request.form.get('club_id')
+    if club_id is not None :
+        club = Club.query.filter_by(id=club_id).first()
+        if club is not None:
+            db.session.delete(club)
+            db.session.commit()
+
+            return jsonify({'status': 'ok',
+                            'message': 'Le club a été supprimé avec succès'})
+        else :
+            return jsonify({'status': 'error',
+                            'message': 'Club non trouvé'})
+    return jsonify({'status': 'error',
+                    'message': 'Id non trouvé'})
 
 @views.route("/clubs/", methods=['POST'])
 @login_required
@@ -796,7 +963,16 @@ def etape_change_participants(etape_id, championnat_id) :
 
                     elif nb_participants >= 9 :
                         race_names = ['A', 'B', 'C', 'D', 'E', 'F']
-                        nb_races = ceil(nb_participants/8)
+
+                        if nb_participants >= 9 and  nb_participants <= 16:
+                            nb_races = 2
+                        elif nb_participants >= 17 and nb_participants <= 19:
+                            nb_races = 3
+                        elif nb_participants >= 20 and nb_participants <= 32:
+                            nb_races = 4
+                        elif nb_participants >= 33:
+                            nb_races = 5
+
                         participants_par_race = [0 for i in range(nb_races)]
 
                         for i in range(nb_participants) :
@@ -811,7 +987,7 @@ def etape_change_participants(etape_id, championnat_id) :
                         for index_race, race in enumerate(races) :
                             nb_participants_race = participants_par_race[index_race]
                             for index_participant_race in range(nb_participants_race) :
-                                new_participant_race =  Participant_race(titulaire_id=participants_etape[index_participant_etape].titulaire_id, race_id=race.id, couloir_id=couloirs[index_participant_race].id)
+                                new_participant_race = Participant_race(titulaire_id=participants_etape[index_participant_etape].titulaire_id, race_id=race.id, couloir_id=couloirs[index_participant_race].id)
                                 db.session.add(new_participant_race)
                                 index_participant_etape += 1
                             db.session.commit()
@@ -836,10 +1012,34 @@ def etape_change_participants(etape_id, championnat_id) :
                                     db.session.add(new_participant_manche)
                                 db.session.commit()
 
+
                         phase_final = Race_type.query.filter_by(type="Finale").first()
-                        for index_race in range(nb_races) :
-                            new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
-                            db.session.add(new_race)
+
+                        if nb_participants >= 9 and nb_participants <= 16:
+                             for index_race in range(2) :
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+
+                        if nb_participants >= 17 and nb_participants <= 24:
+                            for index_race in range(3) :
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+
+                        if nb_participants >= 25 and nb_participants <= 32:
+                            for index_race in range(4) :
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+
+                        if nb_participants >= 33 and nb_participants <= 36:
+                            for index_race in range(5) :
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+
+                        if nb_participants >= 37 and nb_participants <= 40:
+                            for index_race in range(6) :
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_final.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+
                         db.session.commit()
 
                         if nb_participants >= 17 :
@@ -849,12 +1049,12 @@ def etape_change_participants(etape_id, championnat_id) :
                                 db.session.add(new_race)
                             db.session.commit()
 
-                            if nb_participants >= 33 :
-                                phase_quart = Race_type.query.filter_by(type="1/4 Finale").first()
-                                for index_race in range(4) :
-                                    new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_demi.id, categorie_id=new_categorie.id)
-                                    db.session.add(new_race)
-                                db.session.commit()
+                        if nb_participants >= 33 :
+                            phase_quart = Race_type.query.filter_by(type="1/4 Finale").first()
+                            for index_race in range(4):
+                                new_race = Race(name=race_names[index_race], etape_id=etape_id, categorie_type_id=categorie_type.id, race_type_id=phase_quart.id, categorie_id=new_categorie.id)
+                                db.session.add(new_race)
+                            db.session.commit()
         #championnat departemental
         elif championnat_type_id == 2:
             
@@ -897,7 +1097,87 @@ def etape_change_participants(etape_id, championnat_id) :
                             print("pioche = ", pioche)
                             
                             
-                            
+                            if nb_participants % 8 == 0: #des manches de 8, pas de soucis
+                                for i in range(round(nb_participants / 8)):
+                                    tirage = random.sample(pioche, 8)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                    
+                                    
+                            else: #pas divisible par 8, donc on cherche la meilleure repartition de manches
+                                n = nb_participants
+                                k = round(int(n/8) + 1)
+                                z = n/k #le nombre d'éléments par sous ensemble en moyenne
+                                k1 = round((z - int(z))*k)# sous ensembles a E(z)+1 éléments
+                                k2 = round(k - k1) # sous ensembles a E(z) elements
+                                
+                                #remplissage des k1 sous ensembles
+                                z1 = round(int(z) + 1)
+                                for i in range(k1):
+                                    tirage = random.sample(pioche, z1)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    #print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        #print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                #remplissage des k2 sous ensembles
+                                z2 = round(int(z))
+                                for i in range(k2):
+                                    tirage = random.sample(pioche, z2)
+                                    
+                                    for t in tirage:
+                                        pioche.remove(t)
+                                    
+                                    new_manche = Manche(race_id=race_i.id)
+                                    db.session.add(new_manche)
+                                    db.session.commit()
+                                    
+                                    #print("tirage = ", tirage)
+                                    index = 1
+                                    for index_participant in tirage:
+                                        #print("pilote : ", participants_etape[index_participant], " part couloir ", index)
+                                        
+                                        participant_race = participants_etape[index_participant]
+                                        new_participant_manche = Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=new_manche.id, place_depart=index)
+                                        
+                                        db.session.add(new_participant_manche)
+                                        index+=1
+                                    db.session.commit()
+                                
+                                
+                            """
                             while pioche != []:
                                 if nb_participants % 8 == 0:
                                     
@@ -1012,7 +1292,7 @@ def etape_change_participants(etape_id, championnat_id) :
                                         db.session.add(new_participant_manche)
                                         index+=1
                                     db.session.commit()
-
+                                """
 
 
     return redirect(url_for('views.etape', etape_id=etape_id, championnat_id=Championnat.query.filter_by(id=etape.championnat_id).first().id))
@@ -1038,9 +1318,10 @@ def races(etape_id, championnat_id, categorie_type_id) :
     races = Race.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type_id).order_by(Race.name).all()
     etape = Etape.query.filter_by(id=etape_id).first()
     categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    categorie = Categorie.query.filter_by(categorie_type_id = categorie_type.id,etape_id=etape_id).first()
     club = etape.club
 
-    return render_template("races.html", championnat_id=championnat_id, races=races, categorie_type=categorie_type, etape=etape, club=club)
+    return render_template("races.html", championnat_id=championnat_id, races=races, categorie=categorie,categorie_type=categorie_type, etape=etape, club=club)
 
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/races", methods=['POST'])
 @login_required
@@ -1058,7 +1339,6 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
         Redirect: redirection vers views.races
 
     """
-    
 
     if etape_id == request.form.get('etape_id') :
         etape = Etape.query.filter_by(id=etape_id).first()
@@ -1080,8 +1360,8 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
             calcul_points_race(Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id).all())
 
         if categorie.pool_finie :
+            if not categorie.quart_finie and not categorie.quart_genere:
 
-            if not categorie.quart_finie and not categorie.quart_genere :
                 if nb_participants_categorie >= 33 :
                     pool_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="A").first()
                     pool_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="B").first()
@@ -1103,49 +1383,54 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                     couloirs = Couloir.query.all()
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[4]))
+                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=quart_race_a.id, couloir_id=couloirs[4].id))
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[4]))
+                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=quart_race_b.id, couloir_id=couloirs[4].id))
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[0].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[1].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[2].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[3].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[4]))
+                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[0].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[1].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[2].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[3].titulaire_id, race_id=quart_race_c.id, couloir_id=couloirs[4].id))
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[0].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[1].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[2].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[3].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[4]))
+                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[0].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[1].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_e.participations[2].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=pool_race_d.participations[3].titulaire_id, race_id=quart_race_d.id, couloir_id=couloirs[4].id))
 
                     db.session.commit()
 
                     for participant in quart_race_a.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=quart_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=quart_race_a.manches[0].id, place_depart=couloir.couloir_1))
                     for participant in quart_race_b.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=quart_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=quart_race_b.manches[0].id, place_depart=couloir.couloir_1))
                     for participant in quart_race_c.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=quart_race_c.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=quart_race_c.manches[0].id, place_depart=couloir.couloir_1))
                     for participant in quart_race_d.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=quart_race_d.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=quart_race_d.manches[0].id, place_depart=couloir.couloir_1))
 
                     db.session.commit()
                 categorie.quart_genere = True
                 db.session.commit()
 
-            elif not categorie.demi_finie and not categorie.demi_genere :
+            elif not categorie.demi_finie and not categorie.demi_genere:
+
                 if nb_participants_categorie >= 17 :
                     if nb_participants_categorie >= 17 and nb_participants_categorie <= 19 :
 
@@ -1162,27 +1447,29 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                         couloirs = Couloir.query.all()
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5]))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5].id))
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5]))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5].id))
 
                         db.session.commit()
 
                         for participant in demi_race_a.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=couloir.couloir_1))
                         for participant in demi_race_b.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=couloir.couloir_1))
 
                         db.session.commit()
 
@@ -1191,7 +1478,7 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                         pool_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="A").first()
                         pool_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="B").first()
                         pool_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="C").first()
-                        pool_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="D").first()
+                        pool_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="D").first()
 
                         demi_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_demi.id, name="A").first()
                         demi_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_demi.id, name="B").first()
@@ -1202,35 +1489,43 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                         couloirs = Couloir.query.all()
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[6]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[7]))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[6].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[7].id))
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[6]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[7]))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[6].id))
+                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[7].id))
 
                         db.session.commit()
 
                         for participant in demi_race_a.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=couloir.couloir_1))
                         for participant in demi_race_b.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=couloir.couloir_1))
 
                         db.session.commit()
 
                     elif nb_participants_categorie >= 33 :
+
+                        pool_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="A").first()
+                        pool_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="B").first()
+                        pool_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="C").first()
+                        pool_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="D").first()
+                        pool_race_e = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="E").first()
 
                         quart_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="A").first()
                         quart_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="B").first()
@@ -1246,37 +1541,40 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                         couloirs = Couloir.query.all()
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[6]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[7]))
+                        db.session.add(Participant_race(titulaire_id=quart_race_a.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_c.participations[0].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_b.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_d.participations[1].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_a.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_c.participations[2].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[5].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_b.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[6].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_d.participations[3].titulaire_id, race_id=demi_race_a.id, couloir_id=couloirs[7].id))
 
                         random.shuffle(couloirs)
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_d.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[6]))
-                        db.session.add(Participant_race(titulaire_id=pool_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[7]))
+                        db.session.add(Participant_race(titulaire_id=quart_race_b.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[0].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_d.participations[0].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[1].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_a.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[2].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_c.participations[1].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[3].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_b.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[4].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_d.participations[2].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[5].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_a.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[6].id))
+                        db.session.add(Participant_race(titulaire_id=quart_race_c.participations[3].titulaire_id, race_id=demi_race_b.id, couloir_id=couloirs[7].id))
 
                         db.session.commit()
 
                         for participant in demi_race_a.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=couloir.couloir_1))
                         for participant in demi_race_b.participations :
-                            db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                            couloir = Couloir.query.filter_by(id=participant.couloir_id).first()
+                            db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=couloir.couloir_1))
 
                         db.session.commit()
                 categorie.demi_genere = True
                 db.session.commit()
 
-            elif not categorie.finale_finie and not categorie.finale_genere :
+            elif not categorie.finale_finie and not categorie.finale_genere:
+
                 if nb_participants_categorie >= 9 and nb_participants_categorie <= 16 :
 
                     if nb_participants_categorie == 9 :
@@ -1286,6 +1584,9 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
 
                     pool_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="A").first()
                     pool_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="B").first()
+                    pool_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="C").first()
+                    pool_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="D").first()
+                    pool_race_e = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="E").first()
 
                     finale_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="A").first()
                     finale_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="B").first()
@@ -1336,8 +1637,6 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
 
                     db.session.commit()
 
-
-
                 elif nb_participants_categorie >= 17 and nb_participants_categorie <= 32 :
 
                     limit = 4
@@ -1347,9 +1646,11 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
 
                     finale_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="A").first()
                     finale_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="B").first()
+                    finale_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="C").first()
 
                     db.session.add(Manche(race_id=finale_race_a.id))
                     db.session.add(Manche(race_id=finale_race_b.id))
+
                     for i in range(2) :
                         db.session.add(Manche(race_id=finale_race_c.id))
                     db.session.commit()
@@ -1358,8 +1659,10 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                     random.shuffle(couloirs_a)
                     couloirs_b = Couloir.query.all()
                     random.shuffle(couloirs_b)
+
                     index_couloir_a = 0
                     index_couloir_b = 0
+
 
                     for index_participant, participant in enumerate(demi_race_a.participations) :
                         if index_participant < limit :
@@ -1368,6 +1671,7 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                         else :
                             db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs_b[index_couloir_b].id))
                             index_couloir_b += 1
+
                     for index_participant, participant in enumerate(demi_race_b.participations) :
                         if index_participant < limit :
                             db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs_a[index_couloir_a].id))
@@ -1376,154 +1680,368 @@ def genere_phase_suivante(etape_id, championnat_id, categorie_type_id) :
                             db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs_b[index_couloir_b].id))
                             index_couloir_b += 1
 
-                    for participant in demi_race_a.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
-                    for participant in demi_race_b.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=demi_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
 
-                    pool_races = Race.query.filter_by(categorie_id=categorie.id, race_type=phase_pool.id).all()
+                    for participant in finale_race_a.participations :
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=finale_race_a.manches[0].id, place_depart=participant.couloir.couloir_1))
+                    for participant in finale_race_b.participations :
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=finale_race_b.manches[0].id, place_depart=participant.couloir.couloir_1))
 
-                    finale_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="C").first()
-                    for i in range(2) :
-                        db.session.add(Manche(race_id=finale_race_c.id))
+                    pool_races = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id).all()
                     couloirs_c = Couloir.query.all()
-                    random.shuffle(couloir_c)
+                    random.shuffle(couloirs_c)
                     index_couloir_c = 0
+
+
+
                     if nb_participants_categorie >= 25 :
                         finale_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="D").first()
                         for i in range(2) :
                             db.session.add(Manche(race_id=finale_race_d.id))
                         couloirs_d = Couloir.query.all()
-                        random.shuffle(couloir_d)
-                    add_race_c = True
+                        random.shuffle(couloirs_d)
+
+                    index_couloir_d = 0
+
+                    participants_a = Participant_race.query.filter_by(race_id=finale_race_a.id).all()
+                    participants_b = Participant_race.query.filter_by(race_id=finale_race_b.id).all()
+
+                    titulaires_a = []
+                    titulaires_b = []
+                    titulaires_c = []
+
+                    for participant_a in participants_a:
+                        titulaires_a.append(participant_a.titulaire_id)
+
+                    for participant_b in participants_b:
+                        titulaires_b.append(participant_b.titulaire_id)
+
+                    limit1 = 0
+                    limit2 = 0
+                    if nb_participants_categorie == 25 or nb_participants_categorie == 26:
+                        limit1 = 5
+                    if nb_participants_categorie == 27 or nb_participants_categorie == 28:
+                        limit1 = 6
+                    if nb_participants_categorie == 29 or nb_participants_categorie == 30:
+                        limit1 = 7
+                    if nb_participants_categorie == 31 or nb_participants_categorie == 32:
+                        limit1 = 8
+
+                    if nb_participants_categorie == 25:
+                        limit2 = 4
+                    if nb_participants_categorie == 26 or nb_participants_categorie == 27:
+                        limit2 = 5
+                    if nb_participants_categorie == 28 or nb_participants_categorie == 29:
+                        limit2 = 6
+                    if nb_participants_categorie == 30 or nb_participants_categorie == 31:
+                        limit2 = 7
+                    if nb_participants_categorie == 32:
+                        limit2 = 8
 
                     for race in pool_races :
-                        for participant in race.participation[3:] :
-                            if nb_participants_categorie <= 24 or add_race_c :
-                                db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_c.id, couloir_id=couloirs_c[index_couloir_c].id))
-                                finale_race = finale_race_c
-                                index_couloir_c += 1
-                                add_race_c = False
-                            else :
-                                db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_d.id, couloir_id=couloirs_c[index_couloir_d]))
-                                finale_race = finale_race_d
-                                index_couloir_d += 1
-                                add_race_c = True
+                        for participant in race.participations:
+                            if nb_participants_categorie <= 24 :
+                                if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b:
+                                    db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_c.id, couloir_id=couloirs_c[index_couloir_c].id))
+                                    index_couloir_c += 1
 
+                    cmpt1 = 0
+                    cmpt2 = 0
+                    for race in pool_races :
+                        for participant in race.participations:
+                            if nb_participants_categorie > 24 :
+                                if cmpt1 < limit1 and index_couloir_c < 8:
+                                    if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b:
+                                        db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_c.id, couloir_id=couloirs_c[index_couloir_c].id))
+                                        index_couloir_c += 1
+                                        cmpt1 += 1
                             db.session.commit()
-                            for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race.id).all()) :
-                                for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
-                                    if index_manche == 0 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
-                                    elif index_manche == 1 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
 
-                    db.session.commit()
+                    participants_c= Participant_race.query.filter_by(race_id=finale_race_c.id).all()
+                    for participant_c in participants_c:
+                        titulaires_c.append(participant_c.titulaire_id)
+
+                    if nb_participants_categorie >= 25:
+                        for race in pool_races :
+                            for participant in race.participations:
+                                if cmpt2 < limit2 and index_couloir_d < 8:
+                                    if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b and participant.titulaire_id not in titulaires_c:
+                                        db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_d.id, couloir_id=couloirs_d[index_couloir_d].id))
+                                        finale_race = finale_race_d
+                                        index_couloir_d += 1
+                                        add_race_c = True
+                                        cmpt2 += 1
+                                db.session.commit()
+
+                    for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_c.id).all()) :
+                        for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                            if index_manche == 0 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                            elif index_manche == 1 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+
+                    if nb_participants_categorie >= 25 :
+                        for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_d.id).all()) :
+                            for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                                if index_manche == 0 :
+                                    db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                                elif index_manche == 1 :
+                                    db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+                        db.session.commit()
 
                 elif nb_participants_categorie >= 33 :
+
+                    list_race = []
+                    pool_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="A").first()
+                    pool_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="B").first()
+                    pool_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="C").first()
+                    pool_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="D").first()
+                    pool_race_e = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_pool.id, name="E").first()
 
                     demi_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_demi.id, name="A").first()
                     demi_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_demi.id, name="B").first()
 
+                    quart_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="A").first()
+                    quart_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="B").first()
+                    quart_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="C").first()
+                    quart_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="D").first()
+
                     finale_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="A").first()
                     finale_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="B").first()
+                    finale_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="C").first()
+                    finale_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="D").first()
+                    finale_race_e = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="E").first()
+                    finale_race_f = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="F").first()
 
 
                     db.session.add(Manche(race_id=finale_race_a.id))
                     db.session.add(Manche(race_id=finale_race_b.id))
 
+                    list_race.append(pool_race_a)
+                    list_race.append(pool_race_b)
+                    list_race.append(pool_race_c)
+                    list_race.append(pool_race_d)
+                    list_race.append(pool_race_e)
+
                     couloirs = Couloir.query.all()
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[0].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_c.participations[0].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[1].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_d.participations[1].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[2].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[4]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_c.participations[2].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[5]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[3].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[6]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_d.participations[3].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[7]))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[0].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[3].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[1].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[2].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[4].id))
+
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[0].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[1].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[5].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[3].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[6].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[2].titulaire_id, race_id=finale_race_a.id, couloir_id=couloirs[7].id))
 
                     random.shuffle(couloirs)
-                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[0].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[0]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_d.participations[0].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[1]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[1].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[2]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_c.participations[1].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[3]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[2].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[4]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_d.participations[2].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[5]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[3].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[6]))
-                    db.session.add(Participant_race(titulaire_id=demi_race_c.participations[3].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[7]))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[4].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[0].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[5].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[3].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[6].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[1].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_a.participations[7].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[4].id))
+
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[4].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[2].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[5].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[5].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[6].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[6].id))
+                    db.session.add(Participant_race(titulaire_id=demi_race_b.participations[7].titulaire_id, race_id=finale_race_b.id, couloir_id=couloirs[7].id))
 
                     db.session.commit()
 
                     for participant in finale_race_a.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=finale_race_a.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=finale_race_a.manches[0].id, place_depart=participant.couloir.couloir_1))
                     for participant in finale_race_b.participations :
-                        db.session.add(Participant_manche(participant.titulaire_id, manche_id=finale_race_b.manches[0].id, place_depart=participant.couloirs.couloir_1))
+                        db.session.add(Participant_manche(titulaire_id=participant.titulaire_id, manche_id=finale_race_b.manches[0].id, place_depart=participant.couloir.couloir_1))
 
                     db.session.commit()
 
-                    quart_races = Race.query.filter_by(categorie_id=categorie.id, race_type=quart_pool.id).all()
                     finale_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="C").first()
                     for i in range(2) :
                         db.session.add(Manche(race_id=finale_race_c.id))
                     db.session.commit()
 
                     random.shuffle(couloirs)
+
+                    titulaires_a = []
+                    participants_a = Participant_race.query.filter_by(race_id=finale_race_a.id).all()
+                    titulaires_b = []
+                    participants_b = Participant_race.query.filter_by(race_id=finale_race_b.id).all()
+
+                    for participant_a in participants_a:
+                        titulaires_a.append(participant_a.titulaire_id)
+                    for participant_b in participants_b:
+                        titulaires_b.append(participant_b.titulaire_id)
+
+                    cmptc = 0
+                    cmptd = 0
+                    cmpte = 0
+                    cmptf = 0
+
+                    limitc = 0
+                    limitd = 0
+                    limite = 0
+                    limitf = 0
+
+                    if nb_participants_categorie >= 33 or nb_participants_categorie <= 40:
+                        limitc = 4
+
+                    if nb_participants_categorie == 33 or nb_participants_categorie == 34:
+                        limitd = 7
+                    if nb_participants_categorie == 35 or nb_participants_categorie == 36:
+                        limitd = 8
+                    if nb_participants_categorie == 37 or nb_participants_categorie == 38:
+                        limitd = 6
+                    if nb_participants_categorie == 39 or nb_participants_categorie == 40:
+                        limitd = 7
+
+                    if nb_participants_categorie == 33:
+                        limite = 6
+                    if nb_participants_categorie == 34 or nb_participants_categorie == 35:
+                        limite = 7
+                    if nb_participants_categorie == 36 :
+                        limite = 8
+                    if nb_participants_categorie == 37 or nb_participants_categorie == 38 or nb_participants_categorie == 39:
+                        limite = 6
+                    if nb_participants_categorie == 40:
+                        limite = 7
+
+                    if nb_participants_categorie == 37:
+                        limitf = 5
+                    if nb_participants_categorie >= 38 and nb_participants_categorie <= 40:
+                        limitf = 6
+
+                    couloirs_c = Couloir.query.all()
+                    random.shuffle(couloirs_c)
                     index_couloir_c = 0
 
-                    for race in quart_race :
-                        for participant in race.participation[3:] :
-                            db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_c.id, couloir_id=couloirs[index_couloir_c]))
-                            index_couloir_c += 1
-                            db.session.commit()
-                            for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_c.id).all()) :
-                                for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
-                                    if index_manche == 0 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
-                                    elif index_manche == 1 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+                    quart_race_a = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="A").first()
+                    quart_race_b = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="B").first()
+                    quart_race_c = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="C").first()
+                    quart_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_quart.id, name="D").first()
+
+                    list_quarts = []
+                    list_quarts.append(quart_race_a)
+                    list_quarts.append(quart_race_b)
+                    list_quarts.append(quart_race_c)
+                    list_quarts.append(quart_race_d)
+
+                    for race in list_quarts:
+                        for participant in race.participations:
+                            if participant.resultat == 5:
+                                db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_c.id, couloir_id=couloirs_c[index_couloir_c].id))
+                                index_couloir_c += 1
+                                cmptc += 1
                             db.session.commit()
 
+                    titulaires_c = []
+                    participants_c = Participant_race.query.filter_by(race_id=finale_race_c.id).all()
+                    for participant_c in participants_c:
+                        titulaires_c.append(participant_c.titulaire_id)
 
-                    pool_races = Race.query.filter_by(categorie_id=categorie.id, race_type=quart_pool.id).all()
+                    couloirs_d = Couloir.query.all()
+                    random.shuffle(couloirs_d)
+                    index_couloir_d = 0
+
+                    for race in list_race:
+                        for participant in race.participations:
+                            if cmptd < limitd and index_couloir_d < 8:
+                                if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b and participant.titulaire_id not in titulaires_c:
+                                    db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_d.id, couloir_id=couloirs_d[index_couloir_d].id))
+                                    index_couloir_d += 1
+                                    cmptd += 1
+                            db.session.commit()
+
+                    titulaires_d = []
+                    participants_d = Participant_race.query.filter_by(race_id=finale_race_d.id).all()
+                    for participant_d in participants_d:
+                        titulaires_d.append(participant_d.titulaire_id)
+
+                    couloirs_e = Couloir.query.all()
+                    random.shuffle(couloirs_e)
+                    index_couloir_e = 0
+
+                    for race in list_race:
+                        for participant in race.participations:
+                            if cmpte < limite and index_couloir_e < 8:
+                                if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b and participant.titulaire_id not in titulaires_c and participant.titulaire_id not in titulaires_d:
+                                    db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_e.id, couloir_id=couloirs_e[index_couloir_e].id))
+                                    index_couloir_e += 1
+                                    cmpte += 1
+                            db.session.commit()
+
+                    titulaires_e = []
+                    participants_e = Participant_race.query.filter_by(race_id=finale_race_e.id).all()
+                    for participant_e in participants_e:
+                        titulaires_e.append(participant_e.titulaire_id)
+
+                    couloirs_f = Couloir.query.all()
+                    random.shuffle(couloirs_f)
+                    index_couloir_f = 0
+                    if nb_participants_categorie >= 37:
+                        for race in list_race:
+                            for participant in race.participations:
+                                if cmptf < limitf and index_couloir_f < 8:
+                                    if participant.titulaire_id not in titulaires_a and participant.titulaire_id not in titulaires_b and participant.titulaire_id not in titulaires_c and participant.titulaire_id not in titulaires_d and participant.titulaire_id not in titulaires_e:
+                                        db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_f.id, couloir_id=couloirs_f[index_couloir_f].id))
+                                        index_couloir_f += 1
+                                        cmptf += 1
+                                db.session.commit()
+
                     finale_race_d = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="D").first()
                     finale_race_e = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="E").first()
+                    finale_race_f = Race.query.filter_by(categorie_id=categorie.id, race_type_id=phase_finale.id, name="F").first()
+
                     for i in range(2) :
                         db.session.add(Manche(race_id=finale_race_d.id))
                     for i in range(2) :
                         db.session.add(Manche(race_id=finale_race_e.id))
                     db.session.commit()
 
-                    add_race_d = True
+                    if nb_participants_categorie >= 37:
+                        for i in range(2) :
+                            db.session.add(Manche(race_id=finale_race_f.id))
+
                     couloirs_d = Couloir.query.all()
                     random.shuffle(couloirs_d)
                     index_couloir_d = 0
+
                     couloirs_e = Couloir.query.all()
                     random.shuffle(couloirs_e)
                     index_couloir_e = 0
 
-                    for race in pool_race :
-                        for participant in race.participation[3:] :
-                            if add_race_d :
-                                db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_d.id, couloir_id=couloirs_d[index_couloir_d].id))
-                                index_couloir_d += 1
-                                add_race_d = False
-                                finale_race = finale_race_d
-                            else :
-                                db.session.add(Participant_race(titulaire_id=participant.titulaire_id, race_id=finale_race_e.id, couloir_id=couloirs_e[index_couloir_e].id))
-                                index_couloir_e += 1
-                                add_race_d = True
-                                finale_race = finale_race_e
-                            db.session.commit()
-                            for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race.id).all()) :
-                                for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
-                                    if index_manche == 0 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
-                                    elif index_manche == 1 :
-                                        db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
-                            db.session.commit()
+                    for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_c.id).all()) :
+                        for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                            if index_manche == 0 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                            elif index_manche == 1 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
                     db.session.commit()
+
+
+                    for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_d.id).all()) :
+                        for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                            if index_manche == 0 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                            elif index_manche == 1 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+                    db.session.commit()
+
+                    for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_e.id).all()) :
+                        for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                            if index_manche == 0 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                            elif index_manche == 1 :
+                                db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+                    db.session.commit()
+
+                    if nb_participants_categorie >= 37:
+                        for index_manche, manche in enumerate(Manche.query.filter_by(race_id=finale_race_f.id).all()) :
+                            for participant_race in  Participant_race.query.filter_by(race_id=manche.race.id).all() :
+                                if index_manche == 0 :
+                                    db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_1))
+                                elif index_manche == 1 :
+                                    db.session.add(Participant_manche(titulaire_id=participant_race.titulaire_id, manche_id=manche.id, place_depart=participant_race.couloir.couloir_2))
+                        db.session.commit()
 
                 categorie.finale_genere = True
                 db.session.commit()
@@ -1581,7 +2099,7 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
         manche = Manche.query.filter_by(id=manche_id).first()
         if manche is not None :
             for participant in manche.participations :
-                place_arrive = request.form.get(f'place_arrive_{participant.titulaire.id}')
+                place_arrive = request.form.get(f'place_arrive_{participant.titulaire_manche.id}')
                 if place_arrive is not None :
                     if place_arrive != "none" :
                         participant.resultat = place_arrive
@@ -1611,30 +2129,29 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
             phase_finale = Race_type.query.filter_by(type="Finale").first()
             phase_demi = Race_type.query.filter_by(type="1/2 Finale").first()
             phase_quart = Race_type.query.filter_by(type="1/4 Finale").first()
+            categorie = race.categorie
+            for race in categorie.races :
+                print(race.name, race.race_type.type)
+                if race.race_type_id == phase_pool.id and not race.finie :
+                    categorie_pool_finie = False
+                elif race.race_type_id == phase_quart.id and not race.finie :
+                    categorie_quart_finie = False
+                elif race.race_type_id == phase_demi.id and not race.finie :
+                    categorie_demi_finie = False
+                elif race.race_type_id == phase_finale.id and not race.finie :
+                    categorie_finale_finie = False
 
-            for categorie in etape.categories :
-                for race in categorie.races :
-                    print(race.name, race.race_type.type)
-                    if race.race_type_id == phase_pool.id and not race.finie :
-                        categorie_pool_finie = False
-                    elif race.race_type_id == phase_quart.id and not race.finie :
-                        categorie_quart_finie = False
-                    elif race.race_type_id == phase_demi.id and not race.finie :
-                        categorie_demi_finie = False
-                    elif race.race_type_id == phase_finale.id and not race.finie :
-                        categorie_finale_finie = False
+            categorie.pool_finie = categorie_pool_finie
+            categorie.quart_finie = categorie_quart_finie
+            categorie.demi_finie = categorie_demi_finie
+            categorie.finale_finie = categorie_finale_finie
+            db.session.commit()
 
-                categorie.pool_finie = categorie_pool_finie
-                categorie.quart_finie = categorie_quart_finie
-                categorie.demi_finie = categorie_demi_finie
-                categorie.finale_finie = categorie_finale_finie
-                db.session.commit()
-
-                if categorie.pool_finie and categorie.quart_finie and categorie.demi_finie and categorie.finale_finie :
-                    categorie.finie = True
-                else :
-                    categorie.finie = False
-                    etape_finie = False
+            if categorie.pool_finie and categorie.quart_finie and categorie.demi_finie and categorie.finale_finie :
+                categorie.finie = True
+            else :
+                categorie.finie = False
+                etape_finie = False
             etape.finie = etape_finie
             db.session.commit()
 
@@ -1647,3 +2164,188 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
             db.session.commit()
 
         return redirect(url_for('views.manches', championnat_id=championnat_id, etape_id=etape_id, categorie_type_id=categorie_type_id, race_id=race_id))
+
+@views.route("/championnat-<championnat_id>/etape-<etape_id>/download/",methods=['POST'])
+@login_required
+def generer_pdf_classement_categories(etape_id,championnat_id):
+    liste_categories = Categorie.query.filter_by(etape_id=etape_id).all()
+    liste_classements = []
+    etape = Etape.query.filter_by(id=etape_id).first()
+    for categorie in liste_categories:
+        classement_transforme = get_classement_etape_categorie(etape_id,categorie.categorie_type.id)
+        liste_classements.append(classement_transforme)
+    html = render_template('classement_etape_categories_pdf.html',etape = etape, liste_categories= liste_categories,liste_classements=liste_classements)
+    return render_pdf(HTML(string=html))
+
+@views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/download/",methods=['POST'])
+@login_required
+def generer_pdf_classement_races(etape_id, championnat_id,categorie_type_id):
+    etape = Etape.query.filter_by(id=etape_id).first()
+    categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    classement_transforme = get_classement_etape_categorie(etape_id,categorie_type_id)
+    html = render_template('classement_etape_pdf.html',etape = etape, categorie_type=categorie_type,classement_transforme=classement_transforme)
+    return render_pdf(HTML(string=html))
+
+@views.route("/championnat-<championnat_id>/download/",methods=['POST'])
+@login_required
+def generer_pdf_classement_general(championnat_id):
+    championnat = Championnat.query.filter_by(id=championnat_id).first()
+    liste_etapes = Etape.query.filter_by(championnat_id=championnat_id).all()
+    #chaque entrée de liste_groupes_categories représente une liste de catégories liées à une étape spécifique
+    liste_types_categories = []
+
+    #les clés de ce dictionnaire seront les categorie_type
+    #les valeurs de ce dictionnaire seront d'autres dictionnaires
+    # avec en clé les étapes et en valeur les classements d'étapes/categories
+    # {Categorie1:{etape1:{pilote1:50,pilote2:47 ...},etape2{pilote1:47,pilote2:50 ...}},Categorie2{etape1{},etape2{} ...}} 
+    dictionnaire_general = {}
+    liste_types_categories.append(Categorie_type.query.all())
+    for type_categorie in liste_types_categories[0]:
+        dictionnaire_general[type_categorie] = {}
+        dictionnaire_general[type_categorie]["general"] = {}
+        for etape in liste_etapes:
+            classement_etape_categorie = get_classement_etape_categorie(etape.id,type_categorie.id)
+            #ci-dessous, un dictionnaire pour accueillir les différents classements d'étapes liés à un type de catégorie
+            #on ajoute les dictionnaires de classement dans chaque dictionnaire de categorie
+            #et un dictionnaire pour accueillir la somme des points pour toutes les étapes d'une catégorie
+            
+            dictionnaire_general[type_categorie][etape] = []
+            for entree_classement in classement_etape_categorie:
+                #on stocke les scores d'étapes de tous les pilotes liés à une catégorie et à une étape 
+                dictionnaire_general[type_categorie][etape].append((entree_classement[0],entree_classement[1]))
+                if entree_classement[0] not in dictionnaire_general[type_categorie]["general"]:
+                    dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
+                else:
+                    dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
+    for type_categorie in liste_types_categories[0]:
+        #on trie le dictionnaire general sur la base des valeurs de points, tri décroissant.
+        dictionnaire_general[type_categorie]["general"] = {k: v for k, v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)}
+    #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
+    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
+    return render_pdf(HTML(string=html))
+@views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches/download/",methods=['POST'])
+@login_required
+def download_form_post(etape_id, championnat_id, categorie_type_id, race_id):
+    manches = Manche.query.filter_by(race_id=race_id).all()
+    race = Race.query.filter_by(id=race_id).first()
+    liste_participants_race = Participant_race.query.filter_by(race_id = race.id)
+    #retourne les titulaires pour une race donnée (pas possible de s'appuyer sur une référence directe à l'objet titulaire dans participant_race)
+    #je veux tous les titulaires dont l'id est égal à titulaire_id dans liste_participants_race 
+    etape = Etape.query.filter_by(id=etape_id).first()
+    vecteurClassementRace = {}
+    #on itère sur tous les participants de la race
+    for participant_race in liste_participants_race:
+        #pour une race, on a plusieurs manches
+        for index, manche in enumerate(manches):
+            liste_participants_manche = Participant_manche.query.filter_by(manche_id = manche.id)
+            for participant_manche in liste_participants_manche:
+                if participant_manche.titulaire_id == participant_race.titulaire_id:
+                    if vecteurClassementRace.get(participant_race.titulaire_race):
+                        vecteurClassementRace[participant_race.titulaire_race] = vecteurClassementRace[participant_race.titulaire_race] +participant_manche.resultat
+                    else:
+                        vecteurClassementRace[participant_race.titulaire_race] = participant_manche.resultat
+
+    #il faudrait stocker ce vecteur de Classement de race quelque-part pour le réutiliser lors du classement d'étape
+    categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    club = etape.club
+    #tri du vecteur de classement par valeur avant l'envoi
+    sorted_classement = {}
+    sorted_cle = sorted(vecteurClassementRace,key=vecteurClassementRace.get)
+    for i in sorted_cle:
+        sorted_classement[i] = vecteurClassementRace[i]
+    html = render_template('manchesPDF.html', club=club,championnat_id=championnat_id, etape = etape, categorie_type=categorie_type, race=race,manches=manches, vecteur_classement_race = sorted_classement)
+    return render_pdf(HTML(string=html))
+
+def get_classement_etape_categorie(etape_id,categorie_type_id):
+    """Fonction ne renvoyant pas de vue html mais servant à générer les données de classement pour une étape donnée et une catégorie d'age
+    Elle se base sur les places d'arrivées lors des manches de finale ainsi que la lettre de chaque Race
+
+    Args:
+        etape_id (int): id de l'étape
+        categorie_type_id (int): id du type de la catégorie
+
+    Returns:
+        un tuple avec en première valeur l'objet categorie qui concerne ce classement et ensuite en deuxième, une liste ordonnée selon l'ordre du classement contenant les pilotes et le score qui leur est associé pour l'étape passée en paramètre
+
+    """
+    categorie = Categorie.query.filter_by(etape_id=etape_id, categorie_type_id=categorie_type_id).first()
+    race_type_finale = Race_type.query.filter_by(type="Finale").first()
+    etape = Etape.query.filter_by(id=etape_id).first()
+    categorie_type = Categorie_type.query.filter_by(id=categorie_type_id).first()
+    liste_manches = []
+    liste_races = []
+    vecteur_classement_etape = {}
+    classement_transforme = []
+    if categorie is not None:
+        if len(categorie.participations) > 8 and etape.championnat.championnat_type.type != "Départemental":
+            liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id, race_type_id=race_type_finale.id).all()
+        else:
+            liste_races = Race.query.filter_by(etape_id=etape_id, categorie_id=categorie.id).all()
+    #cumul des positions en dessous
+        if categorie.participations is not None and categorie.finie:
+            for race in liste_races:
+                liste_manches.append(Manche.query.filter_by(race_id=race.id).all())
+            for groupe_manche in liste_manches:
+                for manche in groupe_manche:
+                    for participation in manche.participations:
+                        if vecteur_classement_etape.get(participation.titulaire_manche):
+                            vecteur_classement_etape[participation.titulaire_manche] += participation.resultat
+                        else:
+                            vecteur_classement_etape[participation.titulaire_manche] = participation.resultat
+            if len(categorie.participations) > 8:
+                #3 manches de qualification pour chaque race, les 6 meilleurs en A pour une finale en 2 manches les 3 autres en B pareil finale en 2 manches
+                max_vecteur_classement = max(vecteur_classement_etape.values())
+                titulaires_finale_B = []
+                for race in liste_races:
+                    if race.name == "B":
+                        for participant_finale_B in race.participations:
+                            titulaires_finale_B.append(participant_finale_B.titulaire_race)
+                for titulaire_finale_B in titulaires_finale_B:
+                    vecteur_classement_etape[titulaire_finale_B] += max_vecteur_classement
+
+                if len(categorie.participations) > 16:
+                    #maj du nouveau max ci-dessous
+                    max_vecteur_classement = max(vecteur_classement_etape.values())
+                    titulaires_finale_C = []
+                    for race in liste_races:
+                        if race.name == "C":
+                            for participant_finale_C in race.participations:
+                                titulaires_finale_C.append(participant_finale_C.titulaire_race)
+                    for titulaire_finale_C in titulaires_finale_C:
+                        vecteur_classement_etape[titulaire_finale_C] += max_vecteur_classement
+                    #maj du nouveau max ci-dessous
+                    max_vecteur_classement = max(vecteur_classement_etape.values())
+
+                if len(categorie.participations) > 24:
+                    titulaires_finale_D = []
+                    for race in liste_races:
+                        if race.name == "D":
+                            for participant_finale_D in race.participations:
+                                titulaires_finale_D.append(participant_finale_D.titulaire_race)
+                    for titulaire_finale_D in titulaires_finale_D:
+                        vecteur_classement_etape[titulaire_finale_D] += max_vecteur_classement
+
+                if len(categorie.participations) > 32:
+                    titulaires_finale_E = []
+                    for race in liste_races:
+                        if race.name == "E":
+                            for participant_finale_E in race.participations:
+                                titulaires_finale_E.append(participant_finale_E.titulaire_race)
+                    for titulaire_finale_E in titulaires_finale_E:
+                        vecteur_classement_etape[titulaire_finale_E] += max_vecteur_classement
+
+            #on retourne une liste triée sur la base de vecteur_classement_étape contenant les pilotes et le score qui leur est associé
+            classement_etape_brut = sorted(
+                vecteur_classement_etape.items(), key=lambda x: x[1])
+            for index_classement in range(len(classement_etape_brut)):
+                if index_classement == 0:
+                    classement_transforme.append(
+                        (classement_etape_brut[index_classement][0], 50))
+                elif index_classement == 1:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 47))
+                elif index_classement == 2:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 45))
+                #on est dans le cas où index_classement >= 3
+                else:
+                    classement_transforme.append((classement_etape_brut[index_classement][0], 50-(index_classement+3)))
+    return classement_transforme

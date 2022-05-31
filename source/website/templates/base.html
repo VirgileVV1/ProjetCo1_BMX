@@ -5,16 +5,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>{% block title %}Home{% endblock %}</title>
-        <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}" />
 
         <link
             href="{{ url_for('static', filename='main.css') }}"
             rel="stylesheet"
         >
-        <link
+            <link
             href="{{ url_for('static', filename='bootstrap.min.css')}}"
             rel="stylesheet"
-        >
+            >
+    
         <link
             href="{{ url_for('static', filename='aos.css')}}"
             rel="stylesheet"

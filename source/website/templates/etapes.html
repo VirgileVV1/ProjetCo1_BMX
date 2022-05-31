@@ -23,7 +23,12 @@
     </div>
     <div class="horizontal-flex">
         <input type="hidden" name="championnatId" value="{{ championnat.id }}">
-        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+        <button style="margin-bottom: 12px;" type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </div>
+</form>
+<form method="post" action="{{url_for('views.generer_pdf_classement_general',championnat_id=championnat.id)}}">
+    <div class="horizontal-flex">    
+        <button type="submit" class="btn btn-outline-primary">Classement general</button>
     </div>
 </form>
 {% endblock %}
@@ -41,14 +46,16 @@
             <th scope="col">#</th>
             <th scope="col">Club Organisateur</th>
             <th scope="col">Participants</th>
+            <th> <!-- pour l'image --> </th>
         </tr>
     </thead>
     <tbody>
         {% for etape in etapes %}
-        <tr onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">
-            <th scope="row">{{ loop.index }}</th>
-            <td>{{ etape['club'] }}</td>
-            <td>{{ etape['participants'] }}/{{ etape['nb_titulaires'] }}</td>
+        <tr>
+            <th scope="row" onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ loop.index }}</th>
+            <td onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ etape['club'] }}</td>
+            <td onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ etape['participants'] }}/{{ etape['nb_titulaires'] }}</td>
+            <td class="img"><a href="#" onclick="delete_etape({{ etape['id'] }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -56,8 +63,31 @@
 {% endblock %}
 
 
-{% block custom_js %}
+{% block logged_js %}
 <script type="text/javascript">
-    $('#championnats').addClass('active');
+    $('#etapes').addClass('active');
+    function delete_etape(etape_id, event) {
+        if (clicked(event)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_etape') }}",
+                    type: "POST",
+                    data: {
+                        "etape_id": etape_id,
+                    },
+                    success: function(result){
+                        location.reload();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if(xhr.status == 500) {
+                            alert("Erreur de suppression");
+                        }
+                        location.reload();
+                    }
+                }
+            );
+        }
+    }
+
 </script>
 {% endblock %}

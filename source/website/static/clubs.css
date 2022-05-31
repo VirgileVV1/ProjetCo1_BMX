@@ -8,11 +8,14 @@ tr {
 
 td.img {
     width: 2.5rem;
+    cursor: pointer;
 }
 
 td.img img {
     max-height: 100%;
-    width: auto;
+    //width: auto;
+    height: auto;
+    max-width: 100%;
 }
 
 .button {
@@ -22,4 +25,55 @@ td.img img {
 
 .side-bar .items {
   text-align: center;
+}
+
+/* edit form */
+#edit_form {
+    position: absolute;
+    width: 99vw;
+    height: 100%;
+    background-color:
+rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    padding-top: 2vh;
+}
+
+.mg {
+    margin-bottom: 10px;
+}
+
+#container-form {
+    padding: 20px;
+    position: relative;
+    background-color: white;
+    width: 700px;
+    border-radius: 20px;
+    height: 40%;
+    overflow: scroll;
+}
+
+
+/* boutons */
+#container-btns {
+    display: flex;
+    justify-content: space-evenly;
+}
+#edit_form #btn-cancel {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+#edit_form #btn-cancel:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+#edit_form #btn-ok {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+#edit_form #btn-ok:hover {
+    background-color: #0d6efd;
+    color: white;
 }

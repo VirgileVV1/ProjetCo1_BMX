@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>rendu feuille de race</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='manchesPDF.css') }}">
+    </head>
+    <body>
+        <h1>Manches : {{ etape.championnat.championnat_type.type }} - {{ etape.championnat.annee }} - {{ club.ville }}</h1>
+        {% for manche in manches %}
+        <div class="blockTable">
+            <table>
+                <caption>Manches : {{ loop.index }} </caption>
+                <thead>
+                    <tr>
+                        <th scope="col">nom - prenom</th>
+                        <th scope="col">place arrivée</th>
+                        <th scope="col">club</th>
+                        <th scope="col">plaque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pilote in manche.participations %}
+                    <tr>
+
+                        <td>{{ pilote.titulaire_manche.nom }} {{ pilote.titulaire_manche.prenom }} </td>
+                        <td>{{ pilote.resultat }}</td>
+                        <td>{{ pilote.titulaire_manche.club.ville }}</td>
+                        <td> {{ pilote.titulaire_manche.numero_plaque }}</td>
+                    </tr>
+                    {% endfor %}
+ 
+                </tbody>
+
+            </table>
+        </div>
+        {% endfor %}
+        <h2>Classement actuel sur la race</h2>
+        <table>
+            <thead>
+                <th scope="col">nom - prenom</th>
+                <th scope="col">club</th>
+                <th scope="col">plaque</th>
+                <th scope="col">classement</th>
+                <th scope="col">cumul positions</th>
+            </thead>
+            <tbody>
+                {% for position in vecteur_classement_race %}
+                <tr>
+                    <td>{{ position.nom }} {{ position.prenom }}</td>
+                    <td>{{ position.club.ville }} </td>
+                    <td>{{ position.club.initiales }} {{ position.numero_plaque }}</td>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ vecteur_classement_race[position] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>

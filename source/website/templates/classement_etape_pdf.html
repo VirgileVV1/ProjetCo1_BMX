@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>rendu pdf classement étape</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='classement_etape_pdf.css') }}">
+    </head>
+    <body>
+        <h1>Classement d'étape championnat  : {{ etape.championnat.championnat_type.type }} - {{ etape.championnat.annee }} -  {{ categorie_type.name }} - etape : {{ etape.club.ville }}</h1>
+        <table>
+            <thead>
+                <th scope="col">nom - prenom</th>
+                <th scope="col">club</th>
+                <th scope="col">plaque</th>
+                <th scope="col">nombre de points</th>
+                <th scope="col">classement</th>
+            </thead>
+            <tbody>
+                {% for position in classement_transforme %}
+                <tr>
+                    <td>{{ position[0].nom }} {{ position[0].prenom }}</td>
+                    <td>{{ position[0].club.ville }} </td>
+                    <td>{{ position[0].club.initiales }} {{ position[0].numero_plaque }}</td>
+                    <td>{{ position[1] }}</td>
+                    <td>{{ loop.index }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>
