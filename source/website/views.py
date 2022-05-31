@@ -513,7 +513,45 @@ def delete_titulaire() :
         else :
             return jsonify({'status': 'error',
                             'message': 'Titulaire inexistant dans la base de données'})
-        
+
+
+@views.route("/titulaires/delete_all", methods=['POST'])
+@login_required
+def delete_all_titulaire():
+    """Fonction liée au end-point "/titulaires/delete_all en method POST"
+
+    Fonction supprimant un titulaire, à utiliser en tant qu'API en JS
+
+    Returns:
+        Json: résultat de la suppression
+
+    """
+
+    club_name = request.form.get('club_name')
+
+    # si le nom de club est titulaires cela veut dire que on veut supprimer tous les titulaires
+    if club_name == 'titulaires':
+        titulaires_to_delete = Titulaire.query.all()
+        for t in titulaires_to_delete:
+            db.session.delete(t)
+            db.session.commit()
+        return jsonify({'status': 'ok', 'message': 'Les titulaires ont été supprimé avec succès'})
+
+    else:
+        club = Club.query.filter_by(ville=club_name.lower()).first()
+        club_id = club.id
+        titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id)
+        if titulaires_to_delete is not None:
+            for t in titulaires_to_delete:
+                db.session.delete(t)
+                db.session.commit()
+            return jsonify(
+                {'status': 'ok', 'message': 'Les titulaires du club ' + club_name + ' ont été supprimé avec succès'})
+
+    return jsonify({'status': 'error', 'message': 'Erreur serveur'})
+
+
+
 @views.route("/championnats/delete", methods=['POST'])
 @login_required
 def delete_championnat() :

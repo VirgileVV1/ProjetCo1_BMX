@@ -82,8 +82,8 @@
        <div class="horizontal-flex">
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </div>
-    <br>
-    <HR ALIGN=CENTER WIDTH="210">
+
+    <HR ALIGN=CENTER WIDTH="225">
 </form>
 <form class="" method="post">
     <div class="title horizontal-flex mb-4">
@@ -113,6 +113,7 @@
     <div class="form-floating mb-4">
         <input type="text" class="form-control {% if plaqueNb %}is-invalid{% endif %}" id="plaqueNb" name="plaqueNb">
         <label for="plaqueNb" class="form-label">Numéro De Plaque</label>
+        <p style="font-size: 0.7em;"> Vous pouvez ne mettre que le numéro de la plaque (sans la lettre), elle sera ajoutée automatiquement selon le club du titulaire</p>
     </div>
     <div class="mb-4">
         <label for="sexe" class="form-label">Sexe</label>
@@ -171,12 +172,75 @@
         </tr>
         {% endfor %}
     </tbody>
+
 </table>
+
+    <br>
+    <div id="delete_all_titulaires">
+        <button id="btn_delete_all_titulaires" class="btn btn-outline-danger" onclick="deleteAllTitulaires(event, {{ titulaires }})"> Supprimer tous les titulaires {% if club %} club {% endif %} </button>
+        <p style="font-size:0.9em;"> L'opération de suppression peut être longue (30s pour 200 titulaires environ). </p>
+    </div>
+
 {% endblock %}
 
 
 {% block logged_js %}
 <script type="text/javascript">
+
+    var message = ""
+    var club_name = ""
+    window.addEventListener("DOMContentLoaded", (event) => {
+        console.log("DOM entièrement chargé et analysé");
+
+        let url = (window.location.href).split('/')
+        club_name = url[ url.length - 2 ]
+        // si club_name == "" alors on affiche tous les titulaires
+        // sinon on affiche les titulaires du club
+
+        message = "tous les titulaires"
+
+        if (club_name != "titulaires") {
+            console.log("club");
+            document.getElementById("btn_delete_all_titulaires").innerHTML += "du club"
+            message = "tous les titulaires du club"
+        }
+
+
+    });
+
+    function deleteAllTitulaires(e, titulaires) {
+
+       e.preventDefault();  // cette methode empeche le rechargement de la page
+       console.log("ousssi")
+       console.log(titulaires)
+       //let club_name = "";
+       /*if (titulaires.length > 0) {
+            club_name = titulaires[0].club
+       }*/
+       console.log(club_name)
+       if (clicked(event, message)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_all_titulaire') }}",
+                    type: "POST",
+                    data: {
+                        "club_name" : club_name
+                    },
+                    success: function(result){
+                        alert(result.message)
+                        location.reload();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if(xhr.status == 500) {
+                            alert("Erreur serveur");
+                        }
+                        location.reload();
+                    }
+                }
+            );
+        }
+    }
+
 
     function showEditForm(e, titulaire) {
 
