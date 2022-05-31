@@ -177,22 +177,26 @@ def titulaires() :
     #Retour de la page populer des valeurs passées en argument
     return render_template("titulaires.html", title="tous", titulaires=titulaires, clubs=clubs, sexes=sexes)
 
-@views.route('/titulaires/<club_ville>/')
+@views.route('/titulaires/<club_id>/',methods=["POST","GET"])
 @login_required
-def titulaires_by_ville(club_ville) :
-    """Fonction liée au end-point "/titulaires/<club_ville>/"
+def titulaires_by_ville(club_id) :
+    """Fonction liée au end-point "/titulaires/<club_id>/"
 
     Fonction affichant la liste des titulaires d'un club.
 
     Args:
-        club_ville (str): Nom de la ville du club
+        club_id : id du club
 
     Returns:
         Template: template titulaires.html
 
     """
-
-    club = Club.query.filter_by(ville=club_ville).first()
+    if request.method == "POST":
+        #on est dans le cas où formulaire de création de titulaire nous a été soumis, on contrôle et on insère
+        #le titulaire si controle ok
+        add_titulaire(club_id=club_id)
+        
+    club = Club.query.filter_by(id=club_id).first()
     titulaires = get_titulaires_dict(Titulaire.query.filter_by(club_id = club.id).all())
     clubs = Club.query.all()
     sexes = Sexe.query.all()
@@ -201,51 +205,47 @@ def titulaires_by_ville(club_ville) :
 
 @views.route("/titulaires/", methods=['POST'])
 @login_required
-def add_titulaire() :
+def add_titulaire(club_id=None) :
     """Fonction liée au end-point "/titulaires/ en method POST"
-
+    Args:
+        le nom de la template à utiliser pour le rendu (en fonction de là où le titulaire est créé)
     Fonction ajoutant un titulaire
 
     Returns:
         Redirect: redirection vers views.titulaire
 
     """
+    template_to_return = ""
+    clubs = Club.query.all()
+    sexes = Sexe.query.all()
+    new_titulaires = {}
+    if club_id is None:
+        new_titulaires = get_titulaires_dict(Titulaire.query.all())
+        template_to_return = render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, name=True)
+    else:
+        club = Club.query.filter_by(id=club_id).first()
+        new_titulaires = get_titulaires_dict(Titulaire.query.filter_by(club_id=club_id).all())
+        template_to_return = render_template("titulaires.html", title=club.ville[0].upper() + club.ville[1:], titulaires=new_titulaires, clubs=clubs, sexes=sexes)
 
     nom = request.form.get('name').upper() # On met le nom de famille en majuscule
     if nom is None or nom == "":
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, name=True)
-
+        return template_to_return
     # On met le prenom en minscule sauf la premiere lettre
     prenom = request.form.get('surname').lower()
     prenom = prenom[0].upper() + prenom[1:]
     if prenom is None or prenom == "" :
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, surname=True)
-
+        return template_to_return
     date_naissance = request.form.get('birthDate')
     if date_naissance is None or date_naissance == "" or len(date_naissance.split("-")) != 3 or len(date_naissance.split("-")[2]) <= 0 or len(date_naissance.split("-")[2]) > 2 or len(date_naissance.split("-")[1]) <= 0 or len(date_naissance.split("-")[1]) > 2 or len(date_naissance.split("-")[0]) < 4:
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, birthDate=True)
-
-    club_id = request.form.get('clubId')
-    if club_id is None or club_id == "" or Club.query.filter_by(id=club_id).first() is None :
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, clubId=True)
-
+        return template_to_return
+    club_id_form = request.form.get('clubId')
+    if club_id_form is None or club_id_form == "" or Club.query.filter_by(id=club_id_form).first() is None :
+        return template_to_return    
     plaque = request.form.get('plaqueNb')
     #si la plaque contient la lettre on l'ajoute
     if plaque[0].isnumeric():
         numero = plaque
-        plaque = (Club.query.filter_by(id=club_id).first()).initiales+numero
+        plaque = (Club.query.filter_by(id=club_id_form).first()).initiales+numero
     #sinon
     else:
         plaque = plaque[0].upper() + plaque[1:]
@@ -258,18 +258,10 @@ def add_titulaire() :
             PlaqueExist += 1
 
     if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=1000 or len(plaque)>4:
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, plaqueNb=True)
-
+        return template_to_return
     sexe_id = request.form.get('sexeId')
     if sexe_id is None or sexe_id == "" or Sexe.query.filter_by(id=sexe_id).first() is None :
-        new_titulaires = get_titulaires_dict(Titulaire.query.all())
-        clubs = Club.query.all()
-        sexes = Sexe.query.all()
-        return render_template("titulaires.html", title="tous", titulaires=new_titulaires, clubs=clubs, sexes=sexes, sexeId=True)
-
+        return template_to_return
     date_naissance = datetime.datetime.strptime(date_naissance, '%Y-%m-%d')
     if len(plaque) == 2 :
         plaque = plaque[0] + "0" + plaque[1]

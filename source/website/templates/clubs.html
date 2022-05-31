@@ -75,9 +75,9 @@
         {% for club in clubs %}
         <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';">{{ club.ville[0]|upper + club.ville[1:] }}</td>
-            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';"> {{ club.initiales }}</td>
-            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_ville=club.ville)}}';" >{{ club.titulaires|length }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_id=club.id)}}';">{{ club.ville[0]|upper + club.ville[1:] }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_id=club.id)}}';"> {{ club.initiales }}</td>
+            <td onclick="window.location='{{ url_for('views.titulaires_by_ville', club_id=club.id)}}';" >{{ club.titulaires|length }}</td>
             <td class="img"><img src="{{ url_for('static', filename='edit.png') }}" onclick="showEditForm(event, {{club.id}}, '{{ (club.ville[0]|upper + club.ville[1:]) }}', '{{ club.initiales }}')"  alt="Modifier"></td>
             <td class="img"><img src="{{ url_for('static', filename='delete.svg') }}" onclick="deleteClub(event, {{club.id}}, '{{ club.ville[0]|upper + club.ville[1:] }}')" alt="Supprimer"></td>
         </tr>
