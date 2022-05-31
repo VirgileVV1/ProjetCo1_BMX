@@ -167,7 +167,7 @@
             <td contenteditable="false">{{ titulaire.club }}</td>
             <td contenteditable="false">{{ titulaire.plaque }}</td>
             <td class="img"><a class="p{{loop.index}}" onclick="showEditForm(event, {{ titulaire }})"><img src="{{ url_for('static', filename='edit.png') }}" alt="Modifier"></a></td>
-            <td class="img"><a onclick="delete_titulaire(event, {{ titulaire.id }}, "{{ titulaire.nom }}", "{{ titulaire.prenom }}")"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+            <td class="img"><a onclick="delete_titulaire(event, {{ titulaire.id }}, '{{ titulaire.nom }}', '{{ titulaire.prenom }}')"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
 
         </tr>
         {% endfor %}
