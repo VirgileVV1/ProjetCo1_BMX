@@ -6,6 +6,7 @@ import datetime
 import random
 from math import ceil
 import numpy as np
+import os
 
 import xlrd
 
@@ -378,6 +379,8 @@ def add_titulaires() :
                                           numero_plaque=numero_plaque, sexe_id=sexe_id)
                 db.session.add(new_titulaire)
                 db.session.commit()
+
+        os.remove(uploaded_file.filename)
 
     return redirect(url_for('views.titulaires'))
 
