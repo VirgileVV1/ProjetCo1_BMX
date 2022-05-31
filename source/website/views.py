@@ -319,8 +319,6 @@ def add_titulaires() :
         """se redécaler d'une cases vers le bas (pour éviter d'être sur les titres)"""
         indiceFirstRow += 1
 
-        print(indiceFirstRow, indiceFirstColumn)
-
         np_nom = []
         np_dateNaissance = []
         np_club = []
@@ -329,7 +327,6 @@ def add_titulaires() :
 
         for i in range(indiceFirstRow, file.nrows):
             if(file.cell_value(i, 0+indiceFirstColumn) != ''):
-                print(i)
                 np_nom.append(file.cell_value(i, 0+indiceFirstColumn))
                 np_dateNaissance.append(file.cell_value(i, 1+indiceFirstColumn))
                 np_club.append(file.cell_value(i, 2+indiceFirstColumn))
@@ -374,7 +371,7 @@ def add_titulaires() :
 
                 #s'il n'existe pas alors on le crée
             if club_existe == False:
-                new_club = Club(ville=club_nom.lower(), initiales=club_nom[:3].upper())
+                new_club = Club(ville=club_nom.lower(), initiales=numero_plaque[0].upper())
                 db.session.add(new_club)
                 db.session.commit()
 
