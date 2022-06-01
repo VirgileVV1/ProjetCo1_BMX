@@ -257,7 +257,7 @@ def add_titulaire(club_id=None) :
         if (t.numero_plaque == plaque) :
             PlaqueExist += 1
 
-    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id).first().titulaires, plaque) is not None or int(numero)>=1000 or len(plaque)>4:
+    if plaque is None or PlaqueExist >= 1 or plaque == "" or not check_titulaire_number( Club.query.filter_by(id=club_id_form).first().titulaires, plaque) is not None or int(numero)>=1000 or len(plaque)>4:
         return template_to_return
     sexe_id = request.form.get('sexeId')
     if sexe_id is None or sexe_id == "" or Sexe.query.filter_by(id=sexe_id).first() is None :
@@ -265,7 +265,7 @@ def add_titulaire(club_id=None) :
     date_naissance = datetime.datetime.strptime(date_naissance, '%Y-%m-%d')
     if len(plaque) == 2 :
         plaque = plaque[0] + "0" + plaque[1]
-    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id, numero_plaque=plaque, sexe_id=sexe_id)
+    new_titulaire = Titulaire(nom=nom.upper(), prenom=prenom, date_naissance=date_naissance, club_id=club_id_form, numero_plaque=plaque, sexe_id=sexe_id)
     db.session.add(new_titulaire)
     db.session.commit()
 
