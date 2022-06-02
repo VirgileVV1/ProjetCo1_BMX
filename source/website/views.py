@@ -984,7 +984,7 @@ def etape_change_participants(etape_id, championnat_id) :
                             db.session.commit()
 
 
-                    elif nb_participants >= 9 :
+                    elif nb_participants >= 9 and nb_participants <= 40:
                         race_names = ['A', 'B', 'C', 'D', 'E', 'F']
 
                         if nb_participants >= 9 and  nb_participants <= 16:
