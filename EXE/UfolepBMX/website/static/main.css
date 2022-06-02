@@ -1,0 +1,64 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+@font-face{
+    font-family: open-sans;
+    src: url('OpenSans-Regular.ttf');
+    font-weight: normal;
+}
+
+html,
+body {
+    font-family: open-sans;
+    overflow: hidden;
+}
+
+select {
+    font-family: open-sans;
+}
+
+.center-flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vertical-flex {
+    display: flex;
+    align-items: center;
+}
+
+.horizontal-flex {
+    display: flex;
+    justify-content: center;
+}
+
+.bottom-flex {
+    display: flex;
+    align-items: flex-end;
+}
+
+
+.card {
+    border-radius: 1rem !important;
+}
+
+img.back {
+    height: 2rem;
+}
+
+.table {
+  box-shadow: 7px 7px 0 0 var(--bs-gray-200);
+  border: 2px solid var(--bs-blue) !important;
+}
+
+.table th {
+  color: var(--bs-gray-700);
+  border-color: var(--bs-gray-400);
+}
+
+.table td {
+  border-color: var(--bs-gray-400);
+}

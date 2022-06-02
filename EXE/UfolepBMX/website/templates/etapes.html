@@ -1,0 +1,93 @@
+{% extends "logged.html" %}
+
+{% block logged_css %}
+<link
+    href="{{ url_for('static', filename='clubs.css') }}"
+    rel="stylesheet"
+>
+{% endblock %}
+
+{% block left_col %}
+<form class="" method="post">
+    <div class="title horizontal-flex mb-4">
+        <h3>Ajouter une etape</h3>
+    </div>
+    <div class="mb-4">
+        <label for="lieu" class="form-label">Club Organisateur</label>
+        <select id="lieu" name="lieuId" class="form-select {% if lieu %}is-invalid{% endif %}">
+            <option value="none" selected>Choisir un lieu</option>
+            {% for club in clubs %}
+            <option value="{{ club.id }}">{{ club.ville[0]|upper + club.ville[1:] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="horizontal-flex">
+        <input type="hidden" name="championnatId" value="{{ championnat.id }}">
+        <button style="margin-bottom: 12px;" type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </div>
+</form>
+<form method="post" action="{{url_for('views.generer_pdf_classement_general',championnat_id=championnat.id)}}">
+    <div class="horizontal-flex">    
+        <button type="submit" class="btn btn-outline-primary">Classement general</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block right_col %}
+<div class="title mb-4">
+    <div class="center-flex me-2">
+        <a href="{{ url_for('views.championnats') }}"><img class="back" src="{{ url_for('static', filename='back.svg') }}" alt="Retour"></a>
+    </div>
+    <h2>Etapes : {{ championnat_type }} - {{ championnat.annee }}</h2>
+</div>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Club Organisateur</th>
+            <th scope="col">Participants</th>
+            <th> <!-- pour l'image --> </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for etape in etapes %}
+        <tr>
+            <th scope="row" onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ loop.index }}</th>
+            <td onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ etape['club'] }}</td>
+            <td onclick="window.location='{{ url_for('views.etape', championnat_id=championnat.id, etape_id=etape['id'])}}';">{{ etape['participants'] }}/{{ etape['nb_titulaires'] }}</td>
+            <td class="img"><a href="#" onclick="delete_etape({{ etape['id'] }}, event)"><img src="{{ url_for('static', filename='delete.svg') }}" alt="Supprimer"></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+
+{% block logged_js %}
+<script type="text/javascript">
+    $('#etapes').addClass('active');
+    function delete_etape(etape_id, event) {
+        if (clicked(event)) {
+            $.ajax(
+                {
+                    url: "{{ url_for('views.delete_etape') }}",
+                    type: "POST",
+                    data: {
+                        "etape_id": etape_id,
+                    },
+                    success: function(result){
+                        location.reload();
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        if(xhr.status == 500) {
+                            alert("Erreur de suppression");
+                        }
+                        location.reload();
+                    }
+                }
+            );
+        }
+    }
+
+</script>
+{% endblock %}

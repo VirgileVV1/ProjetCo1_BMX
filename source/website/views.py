@@ -13,7 +13,7 @@ import os
 import xlrd
 import os
 if os.name == "nt":
-    os.environ['PATH'] = r"C:\Program Files\GTK3-Runtime Win64\bin" + os.pathsep + os.environ['PATH']
+    os.environ['PATH'] = r"GTK3" + os.pathsep + os.environ['PATH']
 import weasyprint
 from flask_weasyprint import HTML, render_pdf
 

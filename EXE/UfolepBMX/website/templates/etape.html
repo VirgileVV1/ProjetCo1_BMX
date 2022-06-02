@@ -1,0 +1,166 @@
+{% extends "logged.html" %}
+
+{% block logged_css %}
+<link
+    href="{{ url_for('static', filename='etape.css') }}"
+    rel="stylesheet"
+>
+{% endblock %}
+
+{% block left_col %}
+<form class="" method="post">
+    <div class="title horizontal-flex mb-4">
+        <h3>Participants</h3>
+    </div>
+    <div class="mb-4 participants">
+        {% for titulaire in titulaires %}
+        <div class="mb-1 titulaire">
+            <p>{{ titulaire["name"] }}</p>
+            <input name="{{ titulaire['id'] }}" class="form-check-input" type="checkbox" {% if titulaire['participate'] %}checked{% endif %}>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="horizontal-flex">
+       <button style="margin-bottom: 12px;" onclick="select(event)" type="submit" class="btn btn-outline-primary">Tout sélectionner</button>
+    </div>
+
+    <div class="horizontal-flex">
+        <button style="margin-bottom: 12px;" onclick="clicked(event)" type="submit" class="btn btn-outline-primary">Générer</button>
+    </div>
+    <div class="horizontal-flex">
+        <form method="post">
+            <button formaction="{{ url_for('views.generer_pdf_classement_categories',championnat_id=championnat_id, etape_id= etape.id) }}" type="submit" class="btn btn-outline-primary">Classement PDF</button>
+        </form>
+    </div>
+</form>
+{% endblock %}
+
+{% block right_col %}
+<div class="title mb-4">
+    <div class="center-flex me-2">
+        <a href="{{ url_for('views.etapes', championnat_id=championnat_id) }}"><img class="back" src="{{ url_for('static', filename='back.svg') }}" alt="Retour"></a>
+    </div>
+    <h2>Catégories : {{ etape.championnat.championnat_type.type }} - {{ etape.championnat.annee }} - {{ etape.club.ville }}</h2>
+</div>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Catégorie Age</th>
+            <th scope="col">Participants</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for categorie_type in categorie_types %}
+        <tr onclick="window.location='{{ url_for('views.races', championnat_id=championnat_id, categorie_type_id=categorie_types[categorie_type]['id'], etape_id=etape.id) }}';">
+            <th scope="row">{{ loop.index }}</th>
+            <td>{{ categorie_type }}</td>
+            <td>{{ categorie_types[categorie_type]['nb_participants'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block custom_js %}
+<script type="text/javascript">
+
+    var isChecked = false;
+    function select(e)
+    {
+        e.preventDefault();
+        if (isChecked == false){
+
+            for (let i=0; i<document.getElementsByClassName("form-check-input").length;i++){
+
+                document.getElementsByClassName("form-check-input")[i].checked=true;
+            }
+            isChecked = true;
+            document.getElementsByClassName("btn btn-outline-primary")[0].innerText = "Tout désélectionner";
+        }else{
+            for (let i=0; i<document.getElementsByClassName("form-check-input").length;i++){
+
+                document.getElementsByClassName("form-check-input")[i].checked=false;
+            }
+            isChecked = false;
+            document.getElementsByClassName("btn btn-outline-primary")[0].innerText = "Tout sélectionner";
+        }
+
+
+    }
+    $('#championnats').addClass('active');
+
+    function clicked(e)
+    {
+        if(!confirm('Êtes-vous sûr ?\nCela va regénérer toutes les feuilles de course.')) {
+            e.preventDefault();
+        }
+    }
+    $('#championnats').addClass('active');
+</script>
+<script>
+    /*
+    ce script permet de faire une sélection/déselection de plusieurs pilotes par l'appui simultané de la touche shift + clic
+    */
+    let liste_checkbox = document.getElementsByClassName("form-check-input");
+    let last_selected;
+    
+    for(let chk of liste_checkbox)
+    {
+        chk.checked = false;
+        chk.addEventListener('click',set_last_checkbox_selected);
+        chk.addEventListener('click',select_multiple_checkbox_shift);
+    }
+
+    function set_last_checkbox_selected(e)
+    {
+        if(!e.shiftKey)
+        {
+            last_selected = e.srcElement;
+        }
+    }
+    
+    function select_multiple_checkbox_shift(e)
+        {
+            if(e.shiftKey)
+            {
+                let declencheur = e.srcElement;
+                if(declencheur.checked != last_selected.checked)
+                {
+                    last_selected.checked = declencheur.checked;
+                }
+                let last_selected_depasse = false;
+                let declencheur_depasse = false;
+                for(let chk of liste_checkbox)
+                {
+                    //plusieurs cas à gérer
+                    //si premier clic en haut et shift+clic ensuite un peu plus bas dans la liste, classique
+                    //si shift + clic depassé mais pas premier_clic, cas du haut vers le bas
+                    if(chk == last_selected)
+                    {
+                        last_selected_depasse = true;
+                        last_selected_depasse.checked = !last_selected.checked;
+                        if(declencheur_depasse == true)
+                        {
+                            last_selected = declencheur;
+                            return;
+                        }
+                    }
+                    if(chk == declencheur)
+                    {
+                        declencheur_depasse = true;
+                        if(last_selected_depasse == true)
+                        {
+                            last_selected = chk;
+                            return;
+                        }
+                    }
+                    if((last_selected_depasse != declencheur_depasse) && chk != declencheur && chk != last_selected)
+                    {
+                        chk.checked = declencheur.checked;
+                    }
+                }
+            }
+        }
+</script>
+{% endblock %}
