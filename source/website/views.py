@@ -918,24 +918,17 @@ def etape_change_participants(etape_id, championnat_id) :
             db.session.delete(categorie)
         db.session.commit()
 
-        cmpt_participant = 0
+
         for new_participant_id in request.form :
             if request.form.get(new_participant_id) == "on" :
                 titulaire = Titulaire.query.filter_by(id=new_participant_id).first()
                 if titulaire is not None :
-                    cmpt_participant += 1
-
-        if cmpt_participant <= 40:
-            for new_participant_id in request.form :
-                if request.form.get(new_participant_id) == "on" :
-                    titulaire = Titulaire.query.filter_by(id=new_participant_id).first()
-                    if titulaire is not None :
-                        year = Championnat.query.filter_by(id=etape.championnat_id).first().annee
-                        participant_age = year - titulaire.date_naissance.year
-                        for categorie_type in Categorie_type.query.all() :
-                            if participant_age>=categorie_type.min_age and participant_age<=categorie_type.max_age :
-                                new_participant = Participant_etape(etape_id=etape_id, titulaire_id=new_participant_id, categorie_type_id=categorie_type.id)
-                                db.session.add(new_participant)
+                    year = Championnat.query.filter_by(id=etape.championnat_id).first().annee
+                    participant_age = year - titulaire.date_naissance.year
+                    for categorie_type in Categorie_type.query.all() :
+                        if participant_age>=categorie_type.min_age and participant_age<=categorie_type.max_age :
+                            new_participant = Participant_etape(etape_id=etape_id, titulaire_id=new_participant_id, categorie_type_id=categorie_type.id)
+                            db.session.add(new_participant)
 
         db.session.commit()
 
