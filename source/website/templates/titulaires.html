@@ -11,7 +11,7 @@
 {% block edit_form %}
 <div id="edit_form">
     <div id="container-form">
-        <form action="{{url_for('views.edit_titulaire')}}" method="post">
+
             <div class="title horizontal-flex mg">
                 <h3>Modifier le titulaire</h3>
             </div>
@@ -57,11 +57,8 @@
 
             <div id="container-btns">
                 <button class="btn btn-outline-danger" id="btn-cancel" onclick="hideEditForm(event)"> Annuler </button>
-                <button type="submit" class="btn btn-outline-primary" id="btn-ok"> Confirmer </button>
+                <button onclick="editTitulaire(event)" type="submit" class="btn btn-outline-primary" id="btn-ok"> Confirmer </button>
             </div>
-        </form>
-
-
 
 
     </div>
@@ -83,7 +80,7 @@
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </div>
 
-    <HR ALIGN=CENTER WIDTH="225">
+    <HR ALIGN=CENTER WIDTH="100%">
 </form>
 <form class="" method="post">
     <div class="title horizontal-flex mb-4">
@@ -208,23 +205,69 @@
 
     });
 
-    function deleteAllTitulaires(e, titulaires) {
+     /**
+     * Permet d'envoyer une requete POST pour modifier un titulaire
+     * @param { e } event
+     * @return l'objet reponse : Reponse de la requete avec .status et .message
+     */
+    function editTitulaire(e) {
+        e.preventDefault();  // cette methode empeche le rechargement de la page
+        console.log("METHODE EDIT")
 
+        titulaireId = document.getElementById('edited-id').value
+        name= document.getElementById('edited-name').value
+        surname = document.getElementById('edited-surname').value
+        birthDate = document.getElementById('edited-birthDate').value
+        club = document.getElementById('edited-club').value
+        plaqueNb = document.getElementById('edited-plaqueNb').value
+        sexeId = document.getElementById('edited-sexe').value
+
+       $.ajax(
+            {
+                url: "{{ url_for('views.edit_titulaire', titulaire_id=titulaireId) }}",
+                type: "POST",
+                data: {
+                    'name': name,
+                    'surname':surname,
+                    'birth_date':birthDate,
+                    'club':club,
+                    'plaque_nb': plaqueNb,
+                    'sexe_id':sexeId
+                },
+                success: function(result){
+                    if (result.message == undefined) {
+                        alert(name + ' ' + surname +' a été modifié avec succès !')
+                    } else {
+                        alert(result.message)
+                    }
+                    location.reload();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    if(xhr.status == 500) {
+                        alert("Erreur serveur");
+                    }
+                    location.reload();
+                }
+            }
+        );
+
+    }
+
+    /**
+     * Permet d'envoyer une requete POST pour supprimer tous les titulaires ou tous les titulaires d'un club
+     * @param { e } event
+     * @return l'objet reponse : Reponse de la requete avec .status et .message
+     */
+    function deleteAllTitulaires(e) {
        e.preventDefault();  // cette methode empeche le rechargement de la page
-       console.log("ousssi")
-       console.log(titulaires)
-       //let club_name = "";
-       /*if (titulaires.length > 0) {
-            club_name = titulaires[0].club
-       }*/
-       console.log(club_name)
+
        if (clicked(event, message)) {
             $.ajax(
                 {
                     url: "{{ url_for('views.delete_all_titulaire') }}",
                     type: "POST",
                     data: {
-                        "club_name" : club_name
+                        "club_id" : club_name // c'est bien l'id du club qu'on passe
                     },
                     success: function(result){
                         alert(result.message)
@@ -241,7 +284,11 @@
         }
     }
 
-
+    /**
+     * Permet d'afficher le formulaire d'edition d'un titulaire
+     * @param { e } event
+     * @return l'objet reponse : Reponse de la requete avec .status et .message
+     */
     function showEditForm(e, titulaire) {
 
         e.preventDefault();  // cette methode empeche le rechargement de la page

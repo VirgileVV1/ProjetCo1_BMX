@@ -357,15 +357,18 @@ def add_titulaires() :
             # Vérification de si le club existe dans la bd
             for club in clubs:
                 if club.ville.upper() == club_nom.upper(): #s'il existe donc on récupère son numéro
+                    print("on le crée pas")
                     club_existe = True
                     club_id = club.id
                     break
 
                 #s'il n'existe pas alors on le crée
             if club_existe == False:
+                print("on le crée")
                 new_club = Club(ville=club_nom.lower(), initiales=numero_plaque[0].upper())
                 db.session.add(new_club)
                 db.session.commit()
+                club_id = Club.query.filter_by(ville=club_nom.lower()).first().id
 
             # si le titulaire est un homme sexe_id = 1, femme sexe_id = 2
             if np_sexe[row] == "H":
@@ -399,14 +402,10 @@ def add_titulaires() :
 
     return redirect(url_for('views.titulaires'))
 
-"""
-/!\ TODO : l'id doit etre passé en parametre de l'url et de la fonction normalement
-et la route doit etre : /titulaires/<titulaire_id> et la fonction : edit_titulaire(titulaire_id):
-mais j'ai un pb dans l'html je n'arrive pas a passer le bon id en parametre
-"""
-@views.route("/titulaires/edit", methods=['POST'])
+
+@views.route("/titulaires/<titulaire_id>", methods=['POST'])
 @login_required
-def edit_titulaire() :
+def edit_titulaire(titulaire_id) :
     """Fonction liée au end-point "/titulaires/edit en method POST"
 
     Fonction modifiant un titulaire
@@ -415,7 +414,8 @@ def edit_titulaire() :
         Redirect: redirection vers views.titulaire
 
     """
-    titulaire_id = request.form.get('id')
+
+    #titulaire_id = request.form.get('titulaire_id')
 
     if titulaire_id is not None:
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
@@ -424,22 +424,22 @@ def edit_titulaire() :
             nom = request.form.get('name').upper()
             prenom = request.form.get('surname')
             prenom = prenom[0].upper() + prenom[1:].lower()
-            sexe_id = request.form.get('sexeId')
+            sexe_id = request.form.get('sexe_id')
 
-            club_name = request.form.get('clubId')
+            club_name = request.form.get('club')
             clubs = Club.query.all()
             for i in range(len(clubs)):
                 if (club_name.lower() == clubs[i].ville.lower()):
                     club_id = clubs[i].id
 
-            plaque = request.form.get('plaqueNb')
+            plaque = request.form.get('plaque_nb')
             if len(plaque) > 4:
-                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
+                return jsonify({'status': 'error', 'message':'la plaque d\'un titulaire ne doit pas depasse 4 caracteres'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
 
             # on verifie si l'utilisateur a entré la lettre avec le numero de la plaque
             if (plaque[0].isnumeric()):
                 if len(plaque) > 3:
-                    return jsonify({'status': 'error'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
+                    return jsonify({'status': 'error', 'message':'le numero (sans compter la lettre) ne doit pas depasser 3 caracteres'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
                 club = Club.query.filter_by(id=club_id).first()
                 plaque = club.initiales + plaque
 
@@ -459,13 +459,11 @@ def edit_titulaire() :
                     PlaqueExist += 1
 
             if (PlaqueExist >= 1):
-                return jsonify({'status': 'errorr'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
+                return jsonify({'status': 'errorr', 'message':'la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
 
-            str_date = request.form.get('birthDate').split('-')
+            str_date = request.form.get('birth_date').split('-')
             date = datetime.datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
             titulaire.date_naissance = date
-
-            #titulaire.club_id = club_id
 
             titulaire.nom = nom
             titulaire.prenom = prenom
@@ -478,8 +476,9 @@ def edit_titulaire() :
             return redirect(url_for('views.titulaires'))
 
         else:
-            return jsonify({'status': 'error'}) # le titulaire n\'a pas été trouvé dans la base de données'})
-    return jsonify({'status': 'error'}) # pas d'id trouve dans les parametres
+            return jsonify({'status': 'error', 'message':'le titulaire n\'a pas été trouvé dans la base de données'}) # le titulaire n\'a pas été trouvé dans la base de données'})
+    return jsonify({'status': 'error' , 'message':' erreur serveur'}) # pas d'id trouve dans les parametres
+
 
 @views.route("/titulaires/delete_all", methods=['POST'])
 @login_required
@@ -493,10 +492,10 @@ def delete_all_titulaire():
 
     """
 
-    club_name = request.form.get('club_name')
+    club_id = request.form.get('club_id')
 
     # si le nom de club est titulaires cela veut dire que on veut supprimer tous les titulaires
-    if club_name == 'titulaires':
+    if club_id == 'titulaires':
         titulaires_to_delete = Titulaire.query.all()
         for t in titulaires_to_delete:
             db.session.delete(t)
@@ -504,17 +503,25 @@ def delete_all_titulaire():
         return jsonify({'status': 'ok', 'message': 'Les titulaires ont été supprimé avec succès'})
 
     else:
-        club = Club.query.filter_by(ville=club_name.lower()).first()
-        club_id = club.id
-        titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id)
+        #club = Club.query.filter_by(ville=club_name.lower()).first()
+        club = Club.query.filter_by(id=club_id).first()
+        #club_id = club.id
+        titulaires_to_delete = Titulaire.query.all()
+        #titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id).all()
+
         if titulaires_to_delete is not None:
             for t in titulaires_to_delete:
-                db.session.delete(t)
-                db.session.commit()
+
+                if int(t.club_id) == int(club_id):
+                    db.session.delete(t)
+            db.session.commit()
             return jsonify(
-                {'status': 'ok', 'message': 'Les titulaires du club ' + club_name + ' ont été supprimé avec succès'})
+                {'status': 'ok', 'message': 'Les titulaires du club ' + club.ville[0].upper() + club.ville[1:].lower() + ' ont été supprimé avec succès'})
 
     return jsonify({'status': 'error', 'message': 'Erreur serveur'})
+
+
+
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
 def delete_titulaire() :
