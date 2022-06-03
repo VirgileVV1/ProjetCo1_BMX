@@ -2237,6 +2237,15 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/download/",methods=['POST'])
 @login_required
 def generer_pdf_classement_categories(etape_id,championnat_id):
+    """ 
+    fonction liée au end-point "/championnat-<championnat_id>/etape-<etape_id>/download/ en méthode POST
+    fonction permettant de générer un pdf de classement pour l'ensemble des catégories sur une étape donnée
+    Args:
+        etape_id (int): identifiant de l'étape
+        championnat_id (int): identifiant du championnat
+    Returns:
+        un document pdf avec l'ensemble des classements pour une étape donnée, d'un championnat donné pour toutes ses catégories participantes
+    """
     liste_categories = Categorie.query.filter_by(etape_id=etape_id).all()
     liste_classements = []
     etape = Etape.query.filter_by(id=etape_id).first()
@@ -2258,6 +2267,14 @@ def generer_pdf_classement_races(etape_id, championnat_id,categorie_type_id):
 @views.route("/championnat-<championnat_id>/download/",methods=['POST'])
 @login_required
 def generer_pdf_classement_general(championnat_id):
+    """
+    fonction liée au endpoint /championnat-<championnat_id>/download/ en méthode POST
+    cette fonction permet d'obtenir le classement général de toutes les catégories sur l'ensemble du championnat (toutes catégories et toutes étapes comprises)
+    Args:
+        championnat_id (int): l'identifiant du championnat
+    Returns:
+        un document pdf avec l'ensemble des résultats pour toutes les catégories et toutes les étapes d'un championnat précis
+    """
     championnat = Championnat.query.filter_by(id=championnat_id).first()
     liste_etapes = Etape.query.filter_by(championnat_id=championnat_id).all()
     #chaque entrée de liste_groupes_categories représente une liste de catégories liées à une étape spécifique
@@ -2286,11 +2303,39 @@ def generer_pdf_classement_general(championnat_id):
                     dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
                 else:
                     dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
-    for type_categorie in liste_types_categories[0]:
-        #on trie le dictionnaire general sur la base des valeurs de points, tri décroissant.
-        dictionnaire_general[type_categorie]["general"] = {k: v for k, v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)}
-    #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
-    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
+        #gestion des égalités, si le championnat est fini -> on se réfère au résultat attribué lors de la dernière étape
+    championnat_fini = True
+    nb_etapes_finies = 0
+    for etape in championnat.etapes:
+        if etape.finie == False:
+            #le championnat n'est donc pas fini
+            championnat_fini = False
+        else:
+            nb_etapes_finies+=1
+
+    if championnat_fini != True:
+        for type_categorie in liste_types_categories[0]:
+            #on trie le dictionnaire general sur la base des valeurs de points, tri décroissant.
+            dictionnaire_general[type_categorie]["general"] = {k: v for k, v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)}
+    else:
+        for type_categorie in liste_types_categories[0]:
+            liste_triee_generale = [(k,v) for k,v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)]
+            liste_triee_pilotes = [k[0] for k in liste_triee_generale]
+            for pilote in dictionnaire_general[type_categorie]["general"]:
+                for pilote_a_comparer in dictionnaire_general[type_categorie]["general"]:
+                    #on détecte une égalité
+                    if dictionnaire_general[type_categorie]["general"][pilote] == dictionnaire_general[type_categorie]["general"][pilote_a_comparer]:
+                        #on départage en classant mieux celui qui a fait un meilleur score lors de la dernière étape
+                        for participant_derniere_etape in dictionnaire_general[type_categorie][liste_etapes[len(liste_etapes)-1]]:
+                            if participant_derniere_etape[0] == pilote:
+                                for participant_derniere_etape_a_comparer in dictionnaire_general[type_categorie][liste_etapes[len(liste_etapes)-1]]:
+                                    if participant_derniere_etape_a_comparer[0] == pilote_a_comparer:
+                                        if participant_derniere_etape[1] > participant_derniere_etape_a_comparer[1]:
+                                            #on inverse les positions si pilote était derrière pilote_a_comparer au général
+                                            if liste_triee_pilotes.index(pilote) > liste_triee_pilotes.index(pilote_a_comparer):
+                                                liste_triee_generale[liste_triee_generale.index(pilote)], liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)] = liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)], liste_triee_generale[liste_triee_generale.index(pilote)]
+            dictionnaire_general[type_categorie]["general"] = dict(liste_triee_generale)
+    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat,nb_etapes_finies=nb_etapes_finies)
     return render_pdf(HTML(string=html))
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches/download/",methods=['POST'])
 @login_required
