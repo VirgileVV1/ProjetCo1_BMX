@@ -494,14 +494,35 @@ def delete_all_titulaire():
 
     club_id = request.form.get('club_id')
 
+    championnats = Championnat.query.filter_by().all()
+    participant_race = Participant_race.query.filter_by().all()
+    race = Race.query.filter_by().all()
+
+
     # si le nom de club est titulaires cela veut dire que on veut supprimer tous les titulaires
     if club_id == 'titulaires':
-        titulaires_to_delete = Titulaire.query.all()
+        titulaires_to_delete = Titulaire.query.filter_by().all()
+
         for t in titulaires_to_delete:
-            db.session.delete(t)
-            db.session.commit()
+            # on verifie que le titulaire n'est dans aucun championnat
+            titulaire_is_in_a_race = False
+            for pr in participant_race:
+                if int(t.id) == int(pr.titulaire_id):
+
+                    # on verifie si la race dans laquelle a été trouvé le titulaire est finie
+                    race = Race.query.filter_by(id=pr.race_id).first()
+                    # si la race n'est pas finie alors le titulaire ne peut pas etre supprimé
+                    if not race.finie:
+                        titulaire_is_in_a_race = True
+
+            if titulaire_is_in_a_race == False:
+                db.session.delete(t)
+        db.session.commit()
+
+
         return jsonify({'status': 'ok', 'message': 'Les titulaires ont été supprimé avec succès'})
 
+    # sinon on supprime uniquement les titulaires du club
     else:
         #club = Club.query.filter_by(ville=club_name.lower()).first()
         club = Club.query.filter_by(id=club_id).first()
@@ -510,10 +531,27 @@ def delete_all_titulaire():
         #titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id).all()
 
         if titulaires_to_delete is not None:
-            for t in titulaires_to_delete:
 
+            # on verifie que le titulaire est dans le club duquel on veut supprimer tous les titulaires
+            for t in titulaires_to_delete:
                 if int(t.club_id) == int(club_id):
-                    db.session.delete(t)
+
+                    # on verifie si le titulaire est dans une race
+                    titulaire_is_in_a_race = False
+                    for pr in participant_race:
+                        #print(int(t.id) == int(pr.titulaire_id))
+                        # si cest le cas
+                        if int(t.id) == int(pr.titulaire_id):
+
+                            # on verifie si la race dans laquelle a été trouvé le titulaire est finie
+                            race = Race.query.filter_by(id=pr.race_id).first()
+                            # si la race n'est pas finie alors le titulaire ne peut pas etre supprimé
+                            if not race.finie:
+                                titulaire_is_in_a_race = True
+
+                    if titulaire_is_in_a_race == False:
+                        db.session.delete(t)
+
             db.session.commit()
             return jsonify(
                 {'status': 'ok', 'message': 'Les titulaires du club ' + club.ville[0].upper() + club.ville[1:].lower() + ' ont été supprimé avec succès'})
@@ -546,7 +584,8 @@ def delete_titulaire() :
         else :
             return jsonify({'status': 'error',
                             'message': 'Titulaire inexistant dans la base de données'})
-        
+
+
 @views.route("/championnats/delete", methods=['POST'])
 @login_required
 def delete_championnat() :
