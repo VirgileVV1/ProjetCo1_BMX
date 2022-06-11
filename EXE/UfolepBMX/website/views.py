@@ -357,15 +357,18 @@ def add_titulaires() :
             # Vérification de si le club existe dans la bd
             for club in clubs:
                 if club.ville.upper() == club_nom.upper(): #s'il existe donc on récupère son numéro
+                    print("on le crée pas")
                     club_existe = True
                     club_id = club.id
                     break
 
                 #s'il n'existe pas alors on le crée
             if club_existe == False:
+                print("on le crée")
                 new_club = Club(ville=club_nom.lower(), initiales=numero_plaque[0].upper())
                 db.session.add(new_club)
                 db.session.commit()
+                club_id = Club.query.filter_by(ville=club_nom.lower()).first().id
 
             # si le titulaire est un homme sexe_id = 1, femme sexe_id = 2
             if np_sexe[row] == "H":
@@ -399,14 +402,10 @@ def add_titulaires() :
 
     return redirect(url_for('views.titulaires'))
 
-"""
-/!\ TODO : l'id doit etre passé en parametre de l'url et de la fonction normalement
-et la route doit etre : /titulaires/<titulaire_id> et la fonction : edit_titulaire(titulaire_id):
-mais j'ai un pb dans l'html je n'arrive pas a passer le bon id en parametre
-"""
-@views.route("/titulaires/edit", methods=['POST'])
+
+@views.route("/titulaires/<titulaire_id>", methods=['POST'])
 @login_required
-def edit_titulaire() :
+def edit_titulaire(titulaire_id) :
     """Fonction liée au end-point "/titulaires/edit en method POST"
 
     Fonction modifiant un titulaire
@@ -415,7 +414,8 @@ def edit_titulaire() :
         Redirect: redirection vers views.titulaire
 
     """
-    titulaire_id = request.form.get('id')
+
+    #titulaire_id = request.form.get('titulaire_id')
 
     if titulaire_id is not None:
         titulaire = Titulaire.query.filter_by(id=titulaire_id).first()
@@ -424,22 +424,22 @@ def edit_titulaire() :
             nom = request.form.get('name').upper()
             prenom = request.form.get('surname')
             prenom = prenom[0].upper() + prenom[1:].lower()
-            sexe_id = request.form.get('sexeId')
+            sexe_id = request.form.get('sexe_id')
 
-            club_name = request.form.get('clubId')
+            club_name = request.form.get('club')
             clubs = Club.query.all()
             for i in range(len(clubs)):
                 if (club_name.lower() == clubs[i].ville.lower()):
                     club_id = clubs[i].id
 
-            plaque = request.form.get('plaqueNb')
+            plaque = request.form.get('plaque_nb')
             if len(plaque) > 4:
-                return jsonify({'status': 'error'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
+                return jsonify({'status': 'error', 'message':'la plaque d\'un titulaire ne doit pas depasse 4 caracteres'})  # la plaque d'un titulaire ne doit pas depasse 4 caracteres
 
             # on verifie si l'utilisateur a entré la lettre avec le numero de la plaque
             if (plaque[0].isnumeric()):
                 if len(plaque) > 3:
-                    return jsonify({'status': 'error'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
+                    return jsonify({'status': 'error', 'message':'le numero (sans compter la lettre) ne doit pas depasser 3 caracteres'})  # le numero (sans compter la lettre) ne doit pas depasser 3 caracteres
                 club = Club.query.filter_by(id=club_id).first()
                 plaque = club.initiales + plaque
 
@@ -459,13 +459,11 @@ def edit_titulaire() :
                     PlaqueExist += 1
 
             if (PlaqueExist >= 1):
-                return jsonify({'status': 'errorr'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
+                return jsonify({'status': 'errorr', 'message':'la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque'})  #  la plaque du titulaire existe deja, 2 titulaires ne peuvent pas avoir la meme plaque
 
-            str_date = request.form.get('birthDate').split('-')
+            str_date = request.form.get('birth_date').split('-')
             date = datetime.datetime(int(str_date[0]), int(str_date[1]),int(str_date[2]))
             titulaire.date_naissance = date
-
-            #titulaire.club_id = club_id
 
             titulaire.nom = nom
             titulaire.prenom = prenom
@@ -478,8 +476,9 @@ def edit_titulaire() :
             return redirect(url_for('views.titulaires'))
 
         else:
-            return jsonify({'status': 'error'}) # le titulaire n\'a pas été trouvé dans la base de données'})
-    return jsonify({'status': 'error'}) # pas d'id trouve dans les parametres
+            return jsonify({'status': 'error', 'message':'le titulaire n\'a pas été trouvé dans la base de données'}) # le titulaire n\'a pas été trouvé dans la base de données'})
+    return jsonify({'status': 'error' , 'message':' erreur serveur'}) # pas d'id trouve dans les parametres
+
 
 @views.route("/titulaires/delete_all", methods=['POST'])
 @login_required
@@ -493,28 +492,74 @@ def delete_all_titulaire():
 
     """
 
-    club_name = request.form.get('club_name')
+    club_id = request.form.get('club_id')
+
+    championnats = Championnat.query.filter_by().all()
+    participant_race = Participant_race.query.filter_by().all()
+    race = Race.query.filter_by().all()
+
 
     # si le nom de club est titulaires cela veut dire que on veut supprimer tous les titulaires
-    if club_name == 'titulaires':
-        titulaires_to_delete = Titulaire.query.all()
+    if club_id == 'titulaires':
+        titulaires_to_delete = Titulaire.query.filter_by().all()
+
         for t in titulaires_to_delete:
-            db.session.delete(t)
-            db.session.commit()
+            # on verifie que le titulaire n'est dans aucun championnat
+            titulaire_is_in_a_race = False
+            for pr in participant_race:
+                if int(t.id) == int(pr.titulaire_id):
+
+                    # on verifie si la race dans laquelle a été trouvé le titulaire est finie
+                    race = Race.query.filter_by(id=pr.race_id).first()
+                    # si la race n'est pas finie alors le titulaire ne peut pas etre supprimé
+                    if not race.finie:
+                        titulaire_is_in_a_race = True
+
+            if titulaire_is_in_a_race == False:
+                db.session.delete(t)
+        db.session.commit()
+
+
         return jsonify({'status': 'ok', 'message': 'Les titulaires ont été supprimé avec succès'})
 
+    # sinon on supprime uniquement les titulaires du club
     else:
-        club = Club.query.filter_by(ville=club_name.lower()).first()
-        club_id = club.id
-        titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id)
+        #club = Club.query.filter_by(ville=club_name.lower()).first()
+        club = Club.query.filter_by(id=club_id).first()
+        #club_id = club.id
+        titulaires_to_delete = Titulaire.query.all()
+        #titulaires_to_delete = Titulaire.query.filter_by(club_id=club_id).all()
+
         if titulaires_to_delete is not None:
+
+            # on verifie que le titulaire est dans le club duquel on veut supprimer tous les titulaires
             for t in titulaires_to_delete:
-                db.session.delete(t)
-                db.session.commit()
+                if int(t.club_id) == int(club_id):
+
+                    # on verifie si le titulaire est dans une race
+                    titulaire_is_in_a_race = False
+                    for pr in participant_race:
+                        #print(int(t.id) == int(pr.titulaire_id))
+                        # si cest le cas
+                        if int(t.id) == int(pr.titulaire_id):
+
+                            # on verifie si la race dans laquelle a été trouvé le titulaire est finie
+                            race = Race.query.filter_by(id=pr.race_id).first()
+                            # si la race n'est pas finie alors le titulaire ne peut pas etre supprimé
+                            if not race.finie:
+                                titulaire_is_in_a_race = True
+
+                    if titulaire_is_in_a_race == False:
+                        db.session.delete(t)
+
+            db.session.commit()
             return jsonify(
-                {'status': 'ok', 'message': 'Les titulaires du club ' + club_name + ' ont été supprimé avec succès'})
+                {'status': 'ok', 'message': 'Les titulaires du club ' + club.ville[0].upper() + club.ville[1:].lower() + ' ont été supprimé avec succès'})
 
     return jsonify({'status': 'error', 'message': 'Erreur serveur'})
+
+
+
 @views.route("/titulaires/delete", methods=['POST'])
 @login_required
 def delete_titulaire() :
@@ -539,7 +584,8 @@ def delete_titulaire() :
         else :
             return jsonify({'status': 'error',
                             'message': 'Titulaire inexistant dans la base de données'})
-        
+
+
 @views.route("/championnats/delete", methods=['POST'])
 @login_required
 def delete_championnat() :
@@ -911,11 +957,11 @@ def etape_change_participants(etape_id, championnat_id) :
             db.session.delete(categorie)
         db.session.commit()
 
+
         for new_participant_id in request.form :
             if request.form.get(new_participant_id) == "on" :
                 titulaire = Titulaire.query.filter_by(id=new_participant_id).first()
                 if titulaire is not None :
-
                     year = Championnat.query.filter_by(id=etape.championnat_id).first().annee
                     participant_age = year - titulaire.date_naissance.year
                     for categorie_type in Categorie_type.query.all() :
@@ -984,7 +1030,7 @@ def etape_change_participants(etape_id, championnat_id) :
                             db.session.commit()
 
 
-                    elif nb_participants >= 9 :
+                    elif nb_participants >= 9 and nb_participants <= 40:
                         race_names = ['A', 'B', 'C', 'D', 'E', 'F']
 
                         if nb_participants >= 9 and  nb_participants <= 16:
@@ -2191,6 +2237,15 @@ def manches_post(etape_id, championnat_id, categorie_type_id, race_id) :
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/download/",methods=['POST'])
 @login_required
 def generer_pdf_classement_categories(etape_id,championnat_id):
+    """ 
+    fonction liée au end-point "/championnat-<championnat_id>/etape-<etape_id>/download/ en méthode POST
+    fonction permettant de générer un pdf de classement pour l'ensemble des catégories sur une étape donnée
+    Args:
+        etape_id (int): identifiant de l'étape
+        championnat_id (int): identifiant du championnat
+    Returns:
+        un document pdf avec l'ensemble des classements pour une étape donnée, d'un championnat donné pour toutes ses catégories participantes
+    """
     liste_categories = Categorie.query.filter_by(etape_id=etape_id).all()
     liste_classements = []
     etape = Etape.query.filter_by(id=etape_id).first()
@@ -2212,6 +2267,14 @@ def generer_pdf_classement_races(etape_id, championnat_id,categorie_type_id):
 @views.route("/championnat-<championnat_id>/download/",methods=['POST'])
 @login_required
 def generer_pdf_classement_general(championnat_id):
+    """
+    fonction liée au endpoint /championnat-<championnat_id>/download/ en méthode POST
+    cette fonction permet d'obtenir le classement général de toutes les catégories sur l'ensemble du championnat (toutes catégories et toutes étapes comprises)
+    Args:
+        championnat_id (int): l'identifiant du championnat
+    Returns:
+        un document pdf avec l'ensemble des résultats pour toutes les catégories et toutes les étapes d'un championnat précis
+    """
     championnat = Championnat.query.filter_by(id=championnat_id).first()
     liste_etapes = Etape.query.filter_by(championnat_id=championnat_id).all()
     #chaque entrée de liste_groupes_categories représente une liste de catégories liées à une étape spécifique
@@ -2240,11 +2303,39 @@ def generer_pdf_classement_general(championnat_id):
                     dictionnaire_general[type_categorie]["general"][entree_classement[0]] = entree_classement[1]
                 else:
                     dictionnaire_general[type_categorie]["general"][entree_classement[0]] += entree_classement[1]
-    for type_categorie in liste_types_categories[0]:
-        #on trie le dictionnaire general sur la base des valeurs de points, tri décroissant.
-        dictionnaire_general[type_categorie]["general"] = {k: v for k, v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)}
-    #il nous reste encore à trier le classement général, mais problème, on n'a pas l'info des places hors général
-    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat)
+        #gestion des égalités, si le championnat est fini -> on se réfère au résultat attribué lors de la dernière étape
+    championnat_fini = True
+    nb_etapes_finies = 0
+    for etape in championnat.etapes:
+        if etape.finie == False:
+            #le championnat n'est donc pas fini
+            championnat_fini = False
+        else:
+            nb_etapes_finies+=1
+
+    if championnat_fini != True:
+        for type_categorie in liste_types_categories[0]:
+            #on trie le dictionnaire general sur la base des valeurs de points, tri décroissant.
+            dictionnaire_general[type_categorie]["general"] = {k: v for k, v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)}
+    else:
+        for type_categorie in liste_types_categories[0]:
+            liste_triee_generale = [(k,v) for k,v in sorted(dictionnaire_general[type_categorie]["general"].items(), key=lambda item: item[1],reverse=True)]
+            liste_triee_pilotes = [k[0] for k in liste_triee_generale]
+            for pilote in dictionnaire_general[type_categorie]["general"]:
+                for pilote_a_comparer in dictionnaire_general[type_categorie]["general"]:
+                    #on détecte une égalité
+                    if dictionnaire_general[type_categorie]["general"][pilote] == dictionnaire_general[type_categorie]["general"][pilote_a_comparer]:
+                        #on départage en classant mieux celui qui a fait un meilleur score lors de la dernière étape
+                        for participant_derniere_etape in dictionnaire_general[type_categorie][liste_etapes[len(liste_etapes)-1]]:
+                            if participant_derniere_etape[0] == pilote:
+                                for participant_derniere_etape_a_comparer in dictionnaire_general[type_categorie][liste_etapes[len(liste_etapes)-1]]:
+                                    if participant_derniere_etape_a_comparer[0] == pilote_a_comparer:
+                                        if participant_derniere_etape[1] > participant_derniere_etape_a_comparer[1]:
+                                            #on inverse les positions si pilote était derrière pilote_a_comparer au général
+                                            if liste_triee_pilotes.index(pilote) > liste_triee_pilotes.index(pilote_a_comparer):
+                                                liste_triee_generale[liste_triee_generale.index(pilote)], liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)] = liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)], liste_triee_generale[liste_triee_generale.index(pilote)]
+            dictionnaire_general[type_categorie]["general"] = dict(liste_triee_generale)
+    html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat,nb_etapes_finies=nb_etapes_finies)
     return render_pdf(HTML(string=html))
 @views.route("/championnat-<championnat_id>/etape-<etape_id>/categorie-<categorie_type_id>/race-<race_id>/manches/download/",methods=['POST'])
 @login_required

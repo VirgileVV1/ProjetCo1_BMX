@@ -6,23 +6,17 @@
     </head>
     <body>
         <h1>Classement général : {{ championnat.championnat_type.type }} {{ championnat.annee }}</h1>
-        <table>
+        <table style="width:95%">
             <thead>
                 <tr>
-                    <th rowspan="2">plaque</th>
-                    <th rowspan="2">nom - prenom</th>
-                    <th rowspan="2">club</th>
+                    <th>plaque</th>
+                    <th>nom - prenom</th>
+                    <th>club</th>
                     <!-- boucle sur les différentes étapes pour afficher les initiales de club-->
                     {% for etape in liste_etapes %}
                         <th colspan="2">{{ etape.club.initiales }}</th>
                     {% endfor %}
-                    <th rowspan="2" colspan="2">Total Pts et classement</th>
-                </tr>
-                <!-- boucle sur les différentes étapes pour afficher les dates des étapes-->
-                <tr>
-                    {% for etape in liste_etapes %}
-                    <th colspan="2">etape.date </th>
-                    {% endfor %}
+                    <th colspan="2">Total Pts et classement</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,6 +52,10 @@
                                                 {% endif %}
                                             {% endfor %}
                                         {% endif %}
+                                    {% endfor %}
+                                    {% for i in range(championnat.etapes|length - nb_etapes_finies) %}
+                                    <td></td>
+                                    <td></td>
                                     {% endfor %}
                                     <td>{{ classement_general_global[categorie]['general'][pilote] }}</td>
                                     <td>{{ loop.index }}</td>

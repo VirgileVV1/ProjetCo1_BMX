@@ -8,7 +8,7 @@
         <h1>Classement d'étape championnat  : {{ etape.championnat.championnat_type.type }} - {{ etape.championnat.annee }} - etape : {{ etape.club.ville }}</h1>
         {% for classement_transforme in liste_classements %}
         <h2>{{ liste_categories[loop.index - 1].categorie_type.name }}</h2>
-        <table>
+        <table style="width:95%">
             <thead>
                 <th scope="col">nom - prenom</th>
                 <th scope="col">club</th>
@@ -21,7 +21,7 @@
                 <tr>
                     <td>{{ position[0].nom }} {{ position[0].prenom }}</td>
                     <td>{{ position[0].club.ville }} </td>
-                    <td>{{ position[0].club.initiales }} {{ position[0].numero_plaque }}</td>
+                    <td>{{ position[0].numero_plaque }}</td>
                     <td>{{ position[1] }}</td>
                     <td>{{ loop.index }}</td>
                 </tr>
