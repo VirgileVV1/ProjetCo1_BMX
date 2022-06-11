@@ -897,6 +897,7 @@ def etape(etape_id, championnat_id) :
                 'id': titulaire.id,
                 'name': titulaire.nom + " " + titulaire.prenom,
                 'participate': participate,
+                'plate': titulaire.numero_plaque
             })
 
         categorie_types_list = Categorie_type.query.all()
@@ -2333,7 +2334,7 @@ def generer_pdf_classement_general(championnat_id):
                                         if participant_derniere_etape[1] > participant_derniere_etape_a_comparer[1]:
                                             #on inverse les positions si pilote était derrière pilote_a_comparer au général
                                             if liste_triee_pilotes.index(pilote) > liste_triee_pilotes.index(pilote_a_comparer):
-                                                liste_triee_generale[liste_triee_generale.index(pilote)], liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)] = liste_triee_generale[liste_triee_generale.index(pilote_a_comparer)], liste_triee_generale[liste_triee_generale.index(pilote)]
+                                                liste_triee_generale[liste_triee_pilotes.index(pilote)], liste_triee_generale[liste_triee_pilotes.index(pilote_a_comparer)] = liste_triee_generale[liste_triee_pilotes.index(pilote_a_comparer)], liste_triee_generale[liste_triee_pilotes.index(pilote)]
             dictionnaire_general[type_categorie]["general"] = dict(liste_triee_generale)
     html = render_template("classement_general_pdf.html",liste_etapes=liste_etapes,classement_general_global=dictionnaire_general,championnat=championnat,nb_etapes_finies=nb_etapes_finies)
     return render_pdf(HTML(string=html))

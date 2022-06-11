@@ -15,7 +15,7 @@
     <div class="mb-4 participants">
         {% for titulaire in titulaires %}
         <div class="mb-1 titulaire">
-            <p>{{ titulaire["name"] }}</p>
+            <p>{{ titulaire["name"] }}-{{ titulaire["plate"] }}</p>
             <input name="{{ titulaire['id'] }}" class="form-check-input" type="checkbox" {% if titulaire['participate'] %}checked{% endif %}>
         </div>
         {% endfor %}
